@@ -47,6 +47,39 @@
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
     meteor_pos dw 100*320 + 300 ; posi??o inicial (linha 100, x = 300)
 
+    alien_sprite    db 0,0,0,0AH,0AH,0AH,2,0EH,0EH,0EH,0EH,0,0,0
+                    db 0,0,0,2,2,2,2,2,2,2,2,0EH,0EH,0
+                    db 0,0,2,2,2,2,2,2,2,2,2,2,0EH,0
+                    db 0,0,2,2,2,2,2,2,2,2,2,2,2,0EH
+                    db 0AH,0AH,0AH,5,5,0AH,2,0EH,0EH,5,5,0EH,0EH,0EH
+                    db 0AH,0AH,0AH,5,5,0AH,2,0EH,0EH,5,5,0EH,0EH,0EH
+                    db 0AH,0AH,0AH,0AH,0AH,0AH,2,0EH,0EH,0EH,0EH,0EH,0EH,0EH
+                    db 0,0AH,0AH,0AH,2,5,5,2,0EH,0EH,0EH,0,0,0
+                    db 0,0AH,0AH,0AH,2,5,5,2,0EH,0EH,0EH,0,0,0
+                    db 0,0,5,0AH,0AH,5,5,2,0EH,0EH,0EH,0,0,0
+                    db 0,0,5,0AH,0AH,5,5,2,0EH,0EH,0EH,0,0,0
+                    db 0,0,5,0,2,5,5,2,0EH,0EH,0EH,0,0,0
+                    db 0,0,5,0,2,5,5,2,0EH,0EH,0EH,0,0,0
+                    db 0,0,0,0,0AH,0AH,2,0EH,0EH,0,0,0,0,0
+
+    alien_pos dw 125*320 + 300 ; posi??o inicial (linha 100, x = 300)
+    alien_r db 0
+    
+    ship_sprite db 0,0,0,0,0,1,1,1,1,0,0,0,0,0
+                db 0,0,0,0,1,4,4,4,4,1,0,0,0,0
+                db 0,0,0,1,4,4,4,4,4,4,1,0,0,0
+                db 0,0,1,4,4,4,4,4,4,4,4,1,0,0
+                db 0,1,4,4,1,4,4,4,4,1,4,4,1,0
+                db 1,4,4,1,1,4,4,4,4,1,1,4,4,1
+                db 1,4,4,4,4,4,4,4,4,4,4,4,4,1
+                db 1,4,4,4,4,4,4,4,4,4,4,4,4,1
+                db 0,1,4,4,4,4,4,4,4,4,4,4,1,0
+                db 0,0,1,4,4,4,4,4,4,4,4,1,0,0
+                db 0,0,0,1,4,4,4,4,4,4,1,0,0,0
+                db 0,0,0,0,1,4,4,4,4,1,0,0,0,0
+                db 0,0,0,0,0,1,5,5,1,0,0,0,0,0
+                db 0,0,0,0,0,1,1,1,1,0,0,0,0,0
+    ship_pos dw 75*320 + 0 ; posi??o inicial (linha 100, x = 300)
     
 .code
 MAIN:
@@ -56,7 +89,8 @@ MAIN:
     mov ES, AX
     xor DI, DI
 
-    ; call SYSTIME_SEED
+    call SYSTIME_SEED
+    call INIT_ALIEN_RANDOM
 
     ; Define o modo de video
     xor ah, ah
@@ -70,6 +104,15 @@ MAIN:
     
 LOOP_MENU:
     call MOVE_METEOR
+    call MOVE_ALIEN
+    call MOVE_SHIP
+    ; Delay
+    ; usa interrup??o 15h que faz o delay
+    ; dx fica com o valor do deplay, quanto maior mais delay tera
+    xor cx, cx
+    mov dx, 4000h
+    mov ah, 86h
+    int 15h
     jmp LOOP_MENU
 
 ; Procedimento para exibir os botoes INICIAR e SAIR
@@ -249,14 +292,6 @@ DRAW_METEOR:
     mov si, offset meteor_sprite
     call RENDER_SPRITE
 
-    ; Delay
-    ; usa interrup??o 15h que faz o delay
-    ; dx fica com o valor do deplay, quanto maior mais delay tera
-    xor cx, cx
-    mov dx, 4000h
-    mov ah, 86h
-    int 15h
-
     ; devolve os valores empilhados no comeco
     pop dx
     pop cx
@@ -298,5 +333,171 @@ CLEAR_LINE:
     pop ax
     ret
 CLEAR_SPRITE endp
+
+; alien_r: 0 = esquerda, 1 = direita
+; alien_pos: posi??o linear do canto esquerdo do sprite (modo 13h)
+; largura do sprite = 14 px ? x m?ximo = 320-14 = 306
+; esta rotina:
+;   - apaga, decide dire??o/bordas, move 1 px, redesenha e faz delay
+MOVE_ALIEN proc
+    ; salva registradores
+    push ax
+    push di
+    push si
+    push cx
+    push dx
+
+    ; apaga sprite atual
+    mov ax, alien_pos
+    mov di, ax
+    call CLEAR_SPRITE
+
+    ; carrega posi??o atual em AX
+    mov ax, alien_pos
+
+    ; checa borda esquerda (x == 0 na linha 125)
+    cmp ax, 125*320
+    ja  CHECK_RIGHT_BORDER           ; se > esquerda, ainda n?o bateu
+    ; bateu/ultrapassou a esquerda - passa a ir para a direita
+    mov alien_r, 1
+    ;mov ax, 125*320
+    mov alien_pos, ax
+    jmp DECIDE_MOVE
+
+CHECK_RIGHT_BORDER:
+    ; checa borda direita (x == 306 na linha 100)
+    cmp ax, 125*320 + 306
+    jb  DECIDE_MOVE                  ; se < direita, ainda n?o bateu
+    ; bateu/ultrapassou a direita - passa a ir para a esquerda
+    mov alien_r, 0
+    ;mov ax, 125*320 + 306
+    mov alien_pos, ax
+
+DECIDE_MOVE:
+    ; decide dire??o usando JZ quando alien_r == 1
+    mov bl, alien_r
+    cmp bl, 1
+    jz  GO_RIGHT
+
+    ; vai para a esquerda
+    dec ax
+    mov alien_pos, ax
+    jmp DRAW_ALIEN
+
+GO_RIGHT:
+    ; vai para a direita
+    inc ax
+    mov alien_pos, ax
+
+DRAW_ALIEN:
+    ; redesenha
+    mov si, offset alien_sprite
+    ; RENDER_SPRITE espera AX = posi??o
+    call RENDER_SPRITE
+
+    ; restaura registradores
+    pop dx
+    pop cx
+    pop si
+    pop di
+    pop ax
+    ret
+MOVE_ALIEN ENDP
+
+RANDOM_UINT16 proc
+    push dx
+
+    mov ax, 39541
+    mul seed
+    add ax, 16259
+    mov seed, ax
+
+    pop dx
+    ret
+endp
+
+; Inicializa posi??o e dire??o aleat?rias do alien
+; Requer: RANDOM_UINT16 (retorna AX pseudo-aleat?rio)
+; Usa: y fixo = 100 (troque se quiser), largura sprite = 14 (logo x<=306)
+
+INIT_ALIEN_RANDOM proc
+    push ax
+    push bx
+    push cx
+    push dx
+
+    ; x aleat?rio em [0..306]
+    call RANDOM_UINT16         ; AX = rand
+    xor dx, dx
+    mov bx, 307                ; divisor
+    div bx                     ; AX/307
+    mov cx, dx                 ; CX = x (0..306)
+
+    ; y*320 (y = 125)
+    mov bx, 125
+    mov ax, bx
+    shl bx, 6                  ; y<<6
+    shl ax, 8                  ; y<<8
+    add bx, ax                 ; bx = y*320
+
+    ; alien_pos = y*320 + x
+    add bx, cx
+    mov alien_pos, bx
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+INIT_ALIEN_RANDOM endp
+
+MOVE_SHIP proc
+    ; joga pra pilha valres dos registradores pra n?o perder
+    push ax
+    push di
+    push si
+    push cx
+    push dx
+
+    ; Apaga sprite atual
+    ; joga em ax a posi??o do meteoro
+    ; copia pra di isso pra ser usado na proc
+    mov ax, ship_pos
+    mov di, ax
+    call CLEAR_SPRITE
+
+    ; Verifica se chegou no limite esquerdo (coluna 0)
+    ; joga de novo a posi??o do meteoro pra ax
+    ; verifica se ax ja chegou no limite esquerdo da tela
+    mov ax, ship_pos
+    cmp ax, 75*320 + 320
+    jb CONTINUE_MOVE_SHIP
+
+    ; Se passou do limite, reinicia no lado direito
+    ; coloca a posi??o do meteoro no canto direito
+    mov ax, 75*320 + 0
+    mov ship_pos, ax
+    jmp DRAW_SHIP
+
+CONTINUE_MOVE_SHIP:
+    ; Move o meteoro pra esquerda
+    ; o movimento ? feito diminindo um pixel da posi??o
+    inc ship_pos
+    inc ax
+
+DRAW_SHIP:
+    ; coloca o sprint em si
+    mov si, offset ship_sprite
+    call RENDER_SPRITE
+    ; devolve os valores empilhados no comeco
+    pop dx
+    pop cx
+    pop si
+    pop di
+    pop ax
+    ret
+MOVE_SHIP endp
+
+
 
 end MAIN
