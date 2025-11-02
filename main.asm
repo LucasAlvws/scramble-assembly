@@ -18,8 +18,6 @@
     btn_sair_length equ $-btn_sair
     CR EQU 13
     LF EQU 10
-    SPR_W  EQU 13
-    SPR_H  EQU 29
     string  db 7 dup(" ")," ___                    ",13,10
             db 7 dup(" "),"/ __| __ _ _ __ _ _ __  ",13,10
             db 7 dup(" "),"\__ \/ _| '_/ _` | '  \ ",13,10
@@ -80,6 +78,28 @@
                 db 0,0,0,0,0,1,5,5,1,0,0,0,0,0
                 db 0,0,0,0,0,1,1,1,1,0,0,0,0,0
     ship_pos dw 75*320 + 0 ; posi??o inicial (linha 100, x = 300)
+    SCREEN_W    EQU 320
+    SCREEN_H    EQU 200
+
+    SPR_W       EQU 14
+    SPR_H       EQU 14
+    RIGHT_X     EQU (SCREEN_W - SPR_W)   ; ?ltimo X v?lido p/ canto esquerdo do sprite
+
+    ROW_METEOR  EQU 100
+    ROW_ALIEN   EQU 125
+    ROW_SHIP    EQU 75
+
+    ; Limites horizontais por objeto (linha fixa)
+    METEOR_L    EQU (ROW_METEOR*SCREEN_W)
+    METEOR_R    EQU (ROW_METEOR*SCREEN_W + RIGHT_X)
+
+    ALIEN_L     EQU (ROW_ALIEN*SCREEN_W)
+    ALIEN_R     EQU (ROW_ALIEN*SCREEN_W + RIGHT_X)
+
+    SHIP_L      EQU (ROW_SHIP*SCREEN_W)
+    SHIP_R      EQU (ROW_SHIP*SCREEN_W + RIGHT_X)
+
+
     
 .code
 MAIN:
@@ -103,9 +123,23 @@ MAIN:
     call PRINT_BUTTONS
     
 LOOP_MENU:
-    call MOVE_METEOR
-    call MOVE_ALIEN
-    call MOVE_SHIP
+    mov bx, OFFSET meteor_pos
+    mov si, OFFSET meteor_sprite
+    mov ax, METEOR_L
+    mov dx, METEOR_R
+    call MOVE_WRAP_LEFT_AND_DRAW
+    mov bx, OFFSET alien_pos
+    mov bp, OFFSET alien_r
+    mov si, OFFSET alien_sprite
+    mov ax, ALIEN_L
+    mov dx, ALIEN_R
+    call MOVE_BOUNCE_X_AND_DRAW
+    
+    mov bx, OFFSET ship_pos
+    mov si, OFFSET ship_sprite
+    mov ax, SHIP_L
+    mov dx, SHIP_R
+    call MOVE_WRAP_RIGHT_AND_DRAW
     ; Delay
     ; usa interrup??o 15h que faz o delay
     ; dx fica com o valor do deplay, quanto maior mais delay tera
@@ -252,158 +286,6 @@ DRAW_LINE:
 ret
 RENDER_SPRITE endp
 
-
-MOVE_METEOR proc
-    ; joga pra pilha valres dos registradores pra n?o perder
-    push ax
-    push di
-    push si
-    push cx
-    push dx
-
-    ; Apaga sprite atual
-    ; joga em ax a posi??o do meteoro
-    ; copia pra di isso pra ser usado na proc
-    mov ax, meteor_pos
-    mov di, ax
-    call CLEAR_SPRITE
-
-    ; Verifica se chegou no limite esquerdo (coluna 0)
-    ; joga de novo a posi??o do meteoro pra ax
-    ; verifica se ax ja chegou no limite esquerdo da tela
-    mov ax, meteor_pos
-    cmp ax, 100*320
-    ja CONTINUE_MOVE
-
-    ; Se passou do limite, reinicia no lado direito
-    ; coloca a posi??o do meteoro no canto direito
-    mov ax, 100*320 + 306
-    mov meteor_pos, ax
-    jmp DRAW_METEOR
-
-CONTINUE_MOVE:
-    ; Move o meteoro pra esquerda
-    ; o movimento ? feito diminindo um pixel da posi??o
-    dec meteor_pos
-    dec ax
-
-DRAW_METEOR:
-    ; coloca o sprint em si
-    mov si, offset meteor_sprite
-    call RENDER_SPRITE
-
-    ; devolve os valores empilhados no comeco
-    pop dx
-    pop cx
-    pop si
-    pop di
-    pop ax
-    ret
-MOVE_METEOR endp
-
-CLEAR_SPRITE proc
-    ; joga pra pilha valres dos registradores pra n?o perder
-    push ax
-    push cx
-    push di
-    push es
-    
-    ; aponta pra 0A000H no es pra fazer os desenhos na tela
-    ; define cx = 14 pra informar o numero de linha
-    mov ax, 0A000H
-    mov es, ax
-    mov cx, 14
-
-CLEAR_LINE:
-    ; define cx = 14 pra informar o numero de colunas
-    ; usa xor pra zerar ax (0 = preto)
-    ; usa stobs pra colocar preto em todos os cx pixeis 
-    push cx
-    mov cx, 14
-    xor ax, ax
-    rep stosb
-    add di, 306
-    pop cx
-    loop CLEAR_LINE
-
-    ; devolve os valores empilhados no come?o
-    pop es
-    pop di
-    pop cx
-    pop ax
-    ret
-CLEAR_SPRITE endp
-
-; alien_r: 0 = esquerda, 1 = direita
-; alien_pos: posi??o linear do canto esquerdo do sprite (modo 13h)
-; largura do sprite = 14 px ? x m?ximo = 320-14 = 306
-; esta rotina:
-;   - apaga, decide dire??o/bordas, move 1 px, redesenha e faz delay
-MOVE_ALIEN proc
-    ; salva registradores
-    push ax
-    push di
-    push si
-    push cx
-    push dx
-
-    ; apaga sprite atual
-    mov ax, alien_pos
-    mov di, ax
-    call CLEAR_SPRITE
-
-    ; carrega posi??o atual em AX
-    mov ax, alien_pos
-
-    ; checa borda esquerda (x == 0 na linha 125)
-    cmp ax, 125*320
-    ja  CHECK_RIGHT_BORDER           ; se > esquerda, ainda n?o bateu
-    ; bateu/ultrapassou a esquerda - passa a ir para a direita
-    mov alien_r, 1
-    ;mov ax, 125*320
-    mov alien_pos, ax
-    jmp DECIDE_MOVE
-
-CHECK_RIGHT_BORDER:
-    ; checa borda direita (x == 306 na linha 100)
-    cmp ax, 125*320 + 306
-    jb  DECIDE_MOVE                  ; se < direita, ainda n?o bateu
-    ; bateu/ultrapassou a direita - passa a ir para a esquerda
-    mov alien_r, 0
-    ;mov ax, 125*320 + 306
-    mov alien_pos, ax
-
-DECIDE_MOVE:
-    ; decide dire??o usando JZ quando alien_r == 1
-    mov bl, alien_r
-    cmp bl, 1
-    jz  GO_RIGHT
-
-    ; vai para a esquerda
-    dec ax
-    mov alien_pos, ax
-    jmp DRAW_ALIEN
-
-GO_RIGHT:
-    ; vai para a direita
-    inc ax
-    mov alien_pos, ax
-
-DRAW_ALIEN:
-    ; redesenha
-    mov si, offset alien_sprite
-    ; RENDER_SPRITE espera AX = posi??o
-    call RENDER_SPRITE
-
-    ; restaura registradores
-    pop dx
-    pop cx
-    pop si
-    pop di
-    pop ax
-    ret
-MOVE_ALIEN ENDP
-
 RANDOM_UINT16 proc
     push dx
 
@@ -451,53 +333,184 @@ INIT_ALIEN_RANDOM proc
     ret
 INIT_ALIEN_RANDOM endp
 
-MOVE_SHIP proc
-    ; joga pra pilha valres dos registradores pra n?o perder
+; DI = posi??o linear do canto esquerdo do sprite
+CLEAR_SPRITE proc
     push ax
-    push di
-    push si
     push cx
-    push dx
+    push di
+    push es
+    
+    mov ax, 0A000h
+    mov es, ax
+    mov cx, SPR_H
 
-    ; Apaga sprite atual
-    ; joga em ax a posi??o do meteoro
-    ; copia pra di isso pra ser usado na proc
-    mov ax, ship_pos
-    mov di, ax
-    call CLEAR_SPRITE
-
-    ; Verifica se chegou no limite esquerdo (coluna 0)
-    ; joga de novo a posi??o do meteoro pra ax
-    ; verifica se ax ja chegou no limite esquerdo da tela
-    mov ax, ship_pos
-    cmp ax, 75*320 + 320
-    jb CONTINUE_MOVE_SHIP
-
-    ; Se passou do limite, reinicia no lado direito
-    ; coloca a posi??o do meteoro no canto direito
-    mov ax, 75*320 + 0
-    mov ship_pos, ax
-    jmp DRAW_SHIP
-
-CONTINUE_MOVE_SHIP:
-    ; Move o meteoro pra esquerda
-    ; o movimento ? feito diminindo um pixel da posi??o
-    inc ship_pos
-    inc ax
-
-DRAW_SHIP:
-    ; coloca o sprint em si
-    mov si, offset ship_sprite
-    call RENDER_SPRITE
-    ; devolve os valores empilhados no comeco
-    pop dx
+CLEAR_LINE:
+    push cx
+    mov cx, SPR_W
+    xor al, al          ; cor 0 (preto)
+    rep stosb
+    add di, SCREEN_W - SPR_W
     pop cx
-    pop si
+    loop CLEAR_LINE
+
+    pop es
     pop di
+    pop cx
     pop ax
     ret
-MOVE_SHIP endp
+CLEAR_SPRITE endp
 
+; MOVE_WRAP_LEFT_AND_DRAW
+; Entradas:
+;   BX = &pos_var           (ex.: OFFSET meteor_pos)
+;   SI = offset sprite      (ex.: OFFSET meteor_sprite)
+;   AX = L (left bound)     (ex.: METEOR_L)
+;   DX = R (right bound)    (ex.: METEOR_R)
+; Efeito:
+;   - limpa, move 1 px p/ esquerda (wrap p/ direita se necess?rio), redesenha
+MOVE_WRAP_LEFT_AND_DRAW proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    push bp
 
+    mov bp, ax              ; BP = L
+    mov di, [bx]            ; DI = pos atual
+    mov ax, di
+    call CLEAR_SPRITE
+
+    mov ax, [bx]            ; AX = pos
+    cmp ax, bp              ; pos <= L ?
+    ja  MOVE_LEFT
+    ; wrap p/ direita
+    mov ax, dx              ; AX = R
+    mov [bx], ax
+    jmp DRAW
+
+MOVE_LEFT:
+    dec ax
+    mov [bx], ax
+
+DRAW:
+    mov si, si              ; (SI j? ? o sprite)
+    ; AX j? tem pos atualizada
+    call RENDER_SPRITE
+
+    pop bp
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+MOVE_WRAP_LEFT_AND_DRAW endp
+
+; MOVE_BOUNCE_X_AND_DRAW
+; Entradas:
+;   BX = &pos_var           (ex.: OFFSET alien_pos)
+;   BP = &dir_flag          (ex.: OFFSET alien_r)  ; byte: 0=esq, 1=dir
+;   SI = offset sprite      (ex.: OFFSET alien_sprite)
+;   AX = L (left bound)     (ex.: ALIEN_L)
+;   DX = R (right bound)    (ex.: ALIEN_R)
+; Efeito:
+;   - limpa, quica nas bordas, move 1 px na dire??o, redesenha
+MOVE_BOUNCE_X_AND_DRAW proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+
+    mov cx, ax              ; CX = L (guarda L)
+    mov di, [bx]            ; DI = pos atual
+    mov ax, di
+    call CLEAR_SPRITE
+
+    mov ax, [bx]            ; AX = pos
+
+    ; borda esquerda
+    cmp ax, cx
+    ja  CHECK_RIGHT
+    mov ax, cx              ; clamp = L
+    mov [bx], ax
+    mov byte ptr [bp], 1    ; ir para direita
+    jmp DECIDE
+
+CHECK_RIGHT:
+    ; borda direita
+    cmp ax, dx
+    jb  DECIDE
+    mov ax, dx              ; clamp = R
+    mov [bx], ax
+    mov byte ptr [bp], 0    ; ir para esquerda
+
+DECIDE:
+    mov dl, byte ptr [bp]   ; DL = dir (0 / 1)
+    cmp dl, 1
+    jz  RIGHT
+    ; esquerda
+    dec ax
+    mov [bx], ax
+    jmp DRAW_BOUNCE
+
+RIGHT:
+    inc ax
+    mov [bx], ax
+
+DRAW_BOUNCE:
+    ; AX j? tem pos atualizada
+    call RENDER_SPRITE
+
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+MOVE_BOUNCE_X_AND_DRAW endp
+
+MOVE_WRAP_RIGHT_AND_DRAW proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+
+    mov cx, ax              ; CX = L (guarda limite esquerdo)
+    mov di, [bx]            ; DI = posi??o atual
+    mov ax, di
+    call CLEAR_SPRITE       ; apaga sprite antigo
+
+    mov ax, [bx]            ; AX = posi??o atual
+    cmp ax, dx              ; pos >= R ?
+    jb  MOVE_RIGHT        ; se pos < R, ainda pode andar p/ direita
+    ; wrap para a esquerda
+    mov ax, cx              ; AX = L
+    mov [bx], ax
+    jmp DRAW_RIGHT
+
+MOVE_RIGHT:
+    inc ax
+    mov [bx], ax
+
+DRAW_RIGHT:
+    ; AX j? tem a posi??o atualizada; SI j? tem o sprite
+    call RENDER_SPRITE
+
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+MOVE_WRAP_RIGHT_AND_DRAW endp
 
 end MAIN
