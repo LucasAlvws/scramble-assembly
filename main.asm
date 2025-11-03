@@ -99,6 +99,15 @@
     SHIP_L      EQU (ROW_SHIP*SCREEN_W)
     SHIP_R      EQU (ROW_SHIP*SCREEN_W + RIGHT_X)
 
+    fase1   db 7 dup(" "),"                  ",13,10
+            db 7 dup(" "),"  ___             ",13,10
+            db 7 dup(" ")," | __|_ _ ___ ___ ",13,10
+            db 7 dup(" ")," | _/ _` (_-</ -_)",13,10
+            db 7 dup(" ")," |_|\__,_/__/\___|",13,10
+            db 7 dup(" "),"        / |       ",13,10
+            db 7 dup(" "),"        | |       ",13,10
+            db 7 dup(" "),"        |_|       ",13,10
+    fase1_length equ $-fase1
 
     
 .code
@@ -123,32 +132,46 @@ MAIN:
     call PRINT_BUTTONS
     
 LOOP_MENU:
-    mov bx, OFFSET meteor_pos
-    mov si, OFFSET meteor_sprite
-    mov ax, METEOR_L
-    mov dx, METEOR_R
-    call MOVE_WRAP_LEFT_AND_DRAW
-    mov bx, OFFSET alien_pos
-    mov bp, OFFSET alien_r
-    mov si, OFFSET alien_sprite
-    mov ax, ALIEN_L
-    mov dx, ALIEN_R
-    call MOVE_BOUNCE_X_AND_DRAW
-    
-    mov bx, OFFSET ship_pos
-    mov si, OFFSET ship_sprite
-    mov ax, SHIP_L
-    mov dx, SHIP_R
-    call MOVE_WRAP_RIGHT_AND_DRAW
-    ; Delay
-    ; usa interrup??o 15h que faz o delay
-    ; dx fica com o valor do deplay, quanto maior mais delay tera
-    xor cx, cx
-    mov dx, 4000h
-    mov ah, 86h
-    int 15h
-    jmp LOOP_MENU
+    call MOVE_MENU
+    ; Recebe entrada do usu??rio
+    mov ah, 1H
+    int 16H
+    jz LOOP_MENU
 
+    ; Chama a fun????o de navega????o
+    call HANDLE_INPUT
+
+    ; Condi????o para iniciar o jogo
+    cmp ah, 1CH
+    je SELECT_OPTION
+
+    ; Retorno ao loop do menu
+    xor ah, ah
+    int 16H
+    jmp LOOP_MENU
+SELECT_OPTION:
+    xor ah, ah
+    int 16H
+    
+    mov ah, menu
+    cmp ah, 1
+    je FINISH
+
+    call CLEAR_SCREEN
+    call PRINT_FASE_1
+    
+    ; Wait 4s
+    mov cx, 3DH
+    mov dx, 900H
+    mov ah, 86H
+    int 15h
+
+    ;call RESET
+FINISH:
+    CALL END_GAME
+    
+    ret
+    
 ; Procedimento para exibir os botoes INICIAR e SAIR
 ; se menu == 0 o bot?o jogar fica vermelho
 ; se menu == 1 o botao sair fica vermelho
@@ -242,6 +265,22 @@ PRINT_TITLE_MENU proc
 
     ret
 PRINT_TITLE_MENU endp
+
+
+PRINT_FASE_1 proc
+    mov ax, ds 
+    mov es, ax
+    
+    ; ajusta resgitradores pro PRINT_STRING
+    mov bp, offset fase1
+    mov cx, fase1_length ; tamanho
+    mov bl, 0BH ; Cor verde (se bit 1 de AL estiver limpo, usamos BL)
+    mov dl, 7           ; coluna inicial = 7
+    mov dh, 9           ; linha inicial  = 9
+    call PRINT_STRING
+
+    ret
+PRINT_FASE_1 endp
 
 RENDER_SPRITE proc
     ; joga pra pilha valres dos registradores pra n?o perder
@@ -512,5 +551,93 @@ DRAW_RIGHT:
     pop ax
     ret
 MOVE_WRAP_RIGHT_AND_DRAW endp
+
+MOVE_MENU PROC
+    mov bx, OFFSET meteor_pos
+    mov si, OFFSET meteor_sprite
+    mov ax, METEOR_L
+    mov dx, METEOR_R
+    call MOVE_WRAP_LEFT_AND_DRAW
+    mov bx, OFFSET alien_pos
+    mov bp, OFFSET alien_r
+    mov si, OFFSET alien_sprite
+    mov ax, ALIEN_L
+    mov dx, ALIEN_R
+    call MOVE_BOUNCE_X_AND_DRAW
+
+    mov bx, OFFSET ship_pos
+    mov si, OFFSET ship_sprite
+    mov ax, SHIP_L
+    mov dx, SHIP_R
+    call MOVE_WRAP_RIGHT_AND_DRAW
+    ; Delay
+    ; usa interrup??o 15h que faz o delay
+    ; dx fica com o valor do deplay, quanto maior mais delay tera
+    xor cx, cx
+    mov dx, 2710H
+    mov ah, 86H
+    int 15h
+MOVE_MENU ENDP
+
+
+HANDLE_INPUT PROC
+    cmp ah, 48H
+    je ARROW_UP
+
+    cmp ah, 50H
+    je ARROW_DOWN
+
+    jmp END_HANDLE
+
+ARROW_UP:
+    xor ah, ah
+    mov menu, ah
+
+    jmp RENDER_BUTTONS
+
+ARROW_DOWN:
+    mov ah, 1
+    mov menu, ah
+
+RENDER_BUTTONS:
+    call PRINT_BUTTONS
+
+END_HANDLE:
+    ret
+ENDP
+
+END_GAME proc
+    ; Back to text mode
+    xor ah, ah
+    mov al, 3h
+    int 10h
+
+    ; Ends program
+    mov ah, 4ch
+    xor al, al
+    int 21h
+    ret
+endp
+
+CLEAR_SCREEN proc
+    push ax
+    push cx
+    push es
+    push di
+
+    mov ax,0A000h
+    mov es,ax
+    xor di, di
+    mov cx, 32000d
+    cld
+    xor ax, ax
+    rep stosw
+    
+    pop di
+    pop es
+    pop cx
+    pop ax
+    ret
+endp
 
 end MAIN
