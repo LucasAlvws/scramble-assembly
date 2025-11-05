@@ -61,7 +61,6 @@
                     db 0,0,0,0,0AH,0AH,2,0EH,0EH,0,0,0,0,0
 
     alien_pos dw 125*320 + 300 ; posi??o inicial (linha 100, x = 300)
-    alien_r db 0
     
     ship_sprite db 0,0,0,0,0,1,1,1,1,0,0,0,0,0
                 db 0,0,0,0,1,4,4,4,4,1,0,0,0,0
