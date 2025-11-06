@@ -61,7 +61,6 @@
                     db 0,0,0,0,0AH,0AH,2,0EH,0EH,0,0,0,0,0
 
     alien_pos dw 125*320 + 300 ; posi??o inicial (linha 100, x = 300)
-    alien_r db 0
     
     ship_sprite db 0,0,0,0,0,1,1,1,1,0,0,0,0,0
                 db 0,0,0,0,1,4,4,4,4,1,0,0,0,0
@@ -180,8 +179,8 @@ SELECT_OPTION:
     je FINISH
 
     call CLEAR_SCREEN
-    call RENDER_TIME
-    ;call PRINT_FASE_1
+    ;call RENDER_TIME
+    call PRINT_FASE_1
     
     ; Wait 4s
     mov cx, 3DH
@@ -583,7 +582,6 @@ MOVE_MENU PROC
     mov dx, METEOR_R
     call MOVE_WRAP_LEFT_AND_DRAW
     mov bx, OFFSET alien_pos
-    mov bp, OFFSET alien_r
     mov si, OFFSET alien_sprite
     mov ax, ALIEN_L
     mov dx, ALIEN_R
