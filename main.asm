@@ -1,3 +1,4 @@
+
 ; M0 ? Sanity check: texto -> 13h -> desenha 1 pixel -> volta pro texto
 .model small
 .stack
@@ -5,6 +6,7 @@
 .data
     ale dw 0
     menu db 0
+    fase db 1
     btn_iniciar db  14 dup(" "),218,196,196,196,196,196,196,196,196,196,191,13,10
                  db 14 dup(" "),179,"  JOGAR  ",179,10,13
                  db 14 dup(" "),192,196,196,196,196,196,196,196,196,196,217,13,10
@@ -98,38 +100,40 @@
     SHIP_L      EQU (ROW_SHIP*SCREEN_W)
     SHIP_R      EQU (ROW_SHIP*SCREEN_W + RIGHT_X)
 
-    fase1   db 7 dup(" "),"                 ",13,10
-            db 7 dup(" ")," ___             ",13,10
-            db 7 dup(" "),"| __|_ _ ___ ___ ",13,10
-            db 7 dup(" "),"| _/ _` (_-</ -_)",13,10
-            db 7 dup(" "),"|_|\__,_/__/\___|",13,10
-            db 7 dup(" "),"       / |       ",13,10
-            db 7 dup(" "),"       | |       ",13,10
-            db 7 dup(" "),"       |_|       ",13,10
-    fase1_length equ $-fase1
+    fase1   db 7 dup(" ")," ___               _ ",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___  / |",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_) | |",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___| |_|",13,10
+            db 7 dup(" "),"                     ",13,10
+            db 7 dup(" "),"                     ",13,10
+            db 7 dup(" "),"                     ",13,10
     
-    fase2   db 7 dup(" "),"                 ",13,10
-            db 7 dup(" ")," ___             ",13,10
-            db 7 dup(" "),"| __|_ _ ___ ___ ",13,10
-            db 7 dup(" "),"| _/ _` (_-</ -_)",13,10
-            db 7 dup(" "),"|_|\__,_/__/\___|",13,10
-            db 7 dup(" "),"       |_  )     ",13,10
-            db 7 dup(" "),"        / /      ",13,10
-            db 7 dup(" "),"       /___|     ",13,10
-    
-    fase3   db 7 dup(" "),"                 ",13,10
-            db 7 dup(" ")," ___             ",13,10
-            db 7 dup(" "),"| __|_ _ ___ ___ ",13,10
-            db 7 dup(" "),"| _/ _` (_-</ -_)",13,10
-            db 7 dup(" "),"|_|\__,_/__/\___|",13,10
-            db 7 dup(" "),"       |__ /     ",13,10
-            db 7 dup(" "),"        |_ \     ",13,10
-            db 7 dup(" "),"       |___/     ",13,10
+    fase2   db 7 dup(" ")," ___               ___ ",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___  |_  )",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_)  / / ",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___| /___|",13,10
+            db 7 dup(" "),"                       ",13,10
+            db 7 dup(" "),"                       ",13,10
+            
+    fase3   db 7 dup(" ")," ___               ____",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___  |__ /",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_)  |_ \",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___| |___/",13,10
+            db 7 dup(" "),"                       ",13,10
+            db 7 dup(" "),"                       ",13,10
 
     fase_string_length equ $-fase3
     
-    ;fase_vec dw offset fase1, offset fase2, offset fase3
+    fase_vec dw offset fase1, offset fase2, offset fase3
     
+    time db 60
+    timeout db 0
+    time_buffer db '00'
+    time_buffer_len equ $-time_buffer
+
+    
+    time_str db "TEMPO:"
+    time_str_len equ $-time_str
     
 .code
 MAIN:
@@ -177,18 +181,31 @@ SELECT_OPTION:
     mov ah, menu
     cmp ah, 1
     je FINISH
-
-    call CLEAR_SCREEN
-    ;call RENDER_TIME
-    call PRINT_FASE_1
     
-    ; Wait 4s
-    mov cx, 3DH
-    mov dx, 900H
+    call RENDER_FASE
+
+    ;call RESET
+
+    GAME_LOOP:
+    
+    push ax
+    push cx
+    push dx
+
+    xor cx, cx
+    mov dx, 2710H
     mov ah, 86H
     int 15h
 
-    ;call RESET
+    pop dx
+    pop cx
+    pop ax
+    ;call UPDATE
+    ;call RENDER_TIME
+    ;call UPDATE_TIME
+
+    ;jmp GAME_LOOP
+
 FINISH:
     CALL END_GAME
     
@@ -287,22 +304,6 @@ PRINT_TITLE_MENU proc
 
     ret
 PRINT_TITLE_MENU endp
-
-
-PRINT_FASE_1 proc
-    mov ax, ds 
-    mov es, ax
-    
-    ; ajusta resgitradores pro PRINT_STRING
-    mov bp, offset fase1
-    mov cx, fase1_length ; tamanho
-    mov bl, 0BH ; Cor verde (se bit 1 de AL estiver limpo, usamos BL)
-    mov dl, 7           ; coluna inicial = 7
-    mov dh, 9           ; linha inicial  = 9
-    call PRINT_STRING
-
-    ret
-PRINT_FASE_1 endp
 
 RENDER_SPRITE proc
     ; joga pra pilha valres dos registradores pra n?o perder
@@ -662,5 +663,169 @@ CLEAR_SCREEN proc
     ret
 endp
 
+RENDER_FASE proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push bp
+
+    call CLEAR_SCREEN
+
+    ; Print Sector
+    xor ax, ax
+    mov al, fase
+
+    cmp al, 4
+    jne SUM_POINTS
+    ;call SHOW_YOU_WIN
+
+SUM_POINTS:
+    dec al ; number vector index
+
+    ;mov bx, 1000
+    ;mul bx
+    ;xor bx, bx
+    ;mov bl, allies_count
+    ;mul bx
+    ;add score, ax
+
+    xor ax, ax
+    mov al, fase
+    dec al ; number vector index
+    shl al, 1 ; multiply by 2 (since num_vec values are dw)
+    mov bx, offset fase_vec ; get the vector
+    add bx, ax ; add the index to the vector ptr
+    mov bp, [bx] ; set BP to base address of number
+    mov cx, fase_string_length
+    xor dl, dl; line
+    mov dh, 10
+
+    mov bl, 0BH ; Cor verde (se bit 1 de AL estiver limpo, usamos BL)
+    call PRINT_STRING
+
+    xor cx, cx
+    mov cx, 1Eh
+    mov dx, 2710H
+    mov ah, 86H
+    int 15h
+    
+    call CLEAR_SCREEN
+
+    pop bp
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+RENDER_TIME proc
+    push bp
+    push bx
+    push cx
+    push dx
+
+    mov bp, offset time_str
+    mov cx, time_str_len
+    mov bl, 0FH ; white
+    mov dh, 1
+    mov dl, 1
+    call PRINT_STRING
+
+    xor ax, ax
+    mov al, time
+    mov si, offset time_buffer
+    add si, time_buffer_len - 1
+    mov cx, 2
+    call CONVERT_UINT16
+    
+    mov bp, offset time_buffer
+    mov cx, time_buffer_len
+    mov bl, 02H ; green
+    mov dh, 1
+    mov dl, 7
+    call PRINT_STRING
+
+    pop dx
+    pop cx
+    pop bx
+    pop bp
+
+    ret
+endp
+
+
+; AX = uint16 value to output
+; SI = offset of end off string buffer
+; CX = number of digits to write
+CONVERT_UINT16 proc 
+    push si
+    push ax
+    push bx
+    push cx
+    push dx
+
+    mov bx, 10
+
+LOOP_DIV:
+    xor dx, dx
+    div bx
+
+    add dl, '0'
+    mov byte ptr ds:[si], dl
+    dec si
+
+    cmp ax, 0
+    dec cx
+    jnz LOOP_DIV
+
+    cmp cx, 0
+    je END_CONVERSION
+
+    mov dl, '0'
+    mov byte ptr ds:[si], dl
+
+END_CONVERSION:
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    pop si
+    ret     
+endp
+
+UPDATE_TIME proc
+    push ax
+
+    mov ah, timeout
+    inc ah
+    cmp ah, 100
+    jne SAVE_TIMEOUT
+
+    mov ah, time
+    dec ah
+    jnz SAVE_TIME
+
+    mov ah, fase
+    inc ah
+    mov fase, ah
+    
+    call RENDER_FASE
+    ;call RESET
+    
+    jmp END_TIME
+
+SAVE_TIME:
+    mov time, ah
+    xor ah, ah
+
+SAVE_TIMEOUT:
+    mov timeout, ah
+
+END_TIME:
+    pop ax
+    ret
+endp
 
 end MAIN
