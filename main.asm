@@ -3,7 +3,7 @@
 .stack
 
 .data
-    seed dw 0
+    ale dw 0
     menu db 0
     btn_iniciar db  14 dup(" "),218,196,196,196,196,196,196,196,196,196,191,13,10
                  db 14 dup(" "),179,"  JOGAR  ",179,10,13
@@ -99,16 +99,38 @@
     SHIP_L      EQU (ROW_SHIP*SCREEN_W)
     SHIP_R      EQU (ROW_SHIP*SCREEN_W + RIGHT_X)
 
-    fase1   db 7 dup(" "),"                  ",13,10
-            db 7 dup(" "),"  ___             ",13,10
-            db 7 dup(" ")," | __|_ _ ___ ___ ",13,10
-            db 7 dup(" ")," | _/ _` (_-</ -_)",13,10
-            db 7 dup(" ")," |_|\__,_/__/\___|",13,10
-            db 7 dup(" "),"        / |       ",13,10
-            db 7 dup(" "),"        | |       ",13,10
-            db 7 dup(" "),"        |_|       ",13,10
+    fase1   db 7 dup(" "),"                 ",13,10
+            db 7 dup(" ")," ___             ",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___ ",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_)",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___|",13,10
+            db 7 dup(" "),"       / |       ",13,10
+            db 7 dup(" "),"       | |       ",13,10
+            db 7 dup(" "),"       |_|       ",13,10
     fase1_length equ $-fase1
+    
+    fase2   db 7 dup(" "),"                 ",13,10
+            db 7 dup(" ")," ___             ",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___ ",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_)",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___|",13,10
+            db 7 dup(" "),"       |_  )     ",13,10
+            db 7 dup(" "),"        / /      ",13,10
+            db 7 dup(" "),"       /___|     ",13,10
+    
+    fase3   db 7 dup(" "),"                 ",13,10
+            db 7 dup(" ")," ___             ",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___ ",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_)",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___|",13,10
+            db 7 dup(" "),"       |__ /     ",13,10
+            db 7 dup(" "),"        |_ \     ",13,10
+            db 7 dup(" "),"       |___/     ",13,10
 
+    fase_string_length equ $-fase3
+    
+    ;fase_vec dw offset fase1, offset fase2, offset fase3
+    
     
 .code
 MAIN:
@@ -118,7 +140,7 @@ MAIN:
     mov ES, AX
     xor DI, DI
 
-    call SYSTIME_SEED
+    call N_ALE
     call INIT_ALIEN_RANDOM
 
     ; Define o modo de video
@@ -158,7 +180,8 @@ SELECT_OPTION:
     je FINISH
 
     call CLEAR_SCREEN
-    call PRINT_FASE_1
+    call RENDER_TIME
+    ;call PRINT_FASE_1
     
     ; Wait 4s
     mov cx, 3DH
@@ -208,21 +231,21 @@ EXIT_BTN:
     ret
 PRINT_BUTTONS endp
 
-
-SYSTIME_SEED proc
+; gera um valor aleatorio do clock com 1AH
+N_ALE proc
     push ax
     push cx
     push dx
 
     xor ax, ax
     int 1AH
-    mov seed, dx
+    mov ale, dx
 
     pop dx
     pop cx
     pop ax
     ret
-SYSTIME_SEED endp
+N_ALE endp
 
 ;  Desenha CX caracteres a partir de ES:BP na posi??o (linha DH, coluna DL).
 ;  Usa a cor/atributo em BL (p.ex.: 0Fh = branco, 0Ch = vermelho-claro).
@@ -325,13 +348,14 @@ DRAW_LINE:
 ret
 RENDER_SPRITE endp
 
+; usando o valor aleatorio gerado em N_ALE
 RANDOM_UINT16 proc
     push dx
 
-    mov ax, 39541
-    mul seed
-    add ax, 16259
-    mov seed, ax
+    mov ax, 25173
+    mul ale
+    add ax, 13849
+    mov ale, ax
 
     pop dx
     ret
@@ -639,5 +663,6 @@ CLEAR_SCREEN proc
     pop ax
     ret
 endp
+
 
 end MAIN
