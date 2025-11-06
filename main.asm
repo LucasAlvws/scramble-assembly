@@ -201,10 +201,10 @@ SELECT_OPTION:
     pop cx
     pop ax
     ;call UPDATE
-    ;call RENDER_TIME
-    ;call UPDATE_TIME
+    call RENDER_TIME
+    call UPDATE_TIME
 
-    ;jmp GAME_LOOP
+    jmp GAME_LOOP
 
 FINISH:
     CALL END_GAME
@@ -729,8 +729,8 @@ RENDER_TIME proc
     mov bp, offset time_str
     mov cx, time_str_len
     mov bl, 0FH ; white
-    mov dh, 1
-    mov dl, 1
+    xor dh, dh
+    mov dl, 30
     call PRINT_STRING
 
     xor ax, ax
@@ -743,8 +743,8 @@ RENDER_TIME proc
     mov bp, offset time_buffer
     mov cx, time_buffer_len
     mov bl, 02H ; green
-    mov dh, 1
-    mov dl, 7
+    xor dh, dh
+    mov dl, 36
     call PRINT_STRING
 
     pop dx
@@ -776,17 +776,9 @@ LOOP_DIV:
     mov byte ptr ds:[si], dl
     dec si
 
-    cmp ax, 0
     dec cx
     jnz LOOP_DIV
 
-    cmp cx, 0
-    je END_CONVERSION
-
-    mov dl, '0'
-    mov byte ptr ds:[si], dl
-
-END_CONVERSION:
     pop dx
     pop cx
     pop bx
