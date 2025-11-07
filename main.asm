@@ -79,6 +79,7 @@
                 db 0,0,0,0,0,1,5,5,1,0,0,0,0,0
                 db 0,0,0,0,0,1,1,1,1,0,0,0,0,0
     ship_pos dw 75*320 + 0 ; posi??o inicial (linha 100, x = 300)
+    ship_speed EQU 2
     SCREEN_W    EQU 320
     SCREEN_H    EQU 200
 
@@ -100,27 +101,26 @@
     SHIP_L      EQU (ROW_SHIP*SCREEN_W)
     SHIP_R      EQU (ROW_SHIP*SCREEN_W + RIGHT_X)
 
-    fase1   db 7 dup(" ")," ___               _ ",13,10
-            db 7 dup(" "),"| __|_ _ ___ ___  / |",13,10
-            db 7 dup(" "),"| _/ _` (_-</ -_) | |",13,10
-            db 7 dup(" "),"|_|\__,_/__/\___| |_|",13,10
-            db 7 dup(" "),"                     ",13,10
-            db 7 dup(" "),"                     ",13,10
-            db 7 dup(" "),"                     ",13,10
+    fase1   db 7 dup(" ")," ___                  _ ",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___     / |",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_)    | |",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___|    |_|",13,10
+            db 7 dup(" "),"                        ",13,10
+            db 7 dup(" "),"                        ",13,10
     
-    fase2   db 7 dup(" ")," ___               ___ ",13,10
-            db 7 dup(" "),"| __|_ _ ___ ___  |_  )",13,10
-            db 7 dup(" "),"| _/ _` (_-</ -_)  / / ",13,10
-            db 7 dup(" "),"|_|\__,_/__/\___| /___|",13,10
-            db 7 dup(" "),"                       ",13,10
-            db 7 dup(" "),"                       ",13,10
+    fase2   db 7 dup(" ")," ___                ___ ",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___   |_  )",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_)   / / ",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___|  /___|",13,10
+            db 7 dup(" "),"                        ",13,10
+            db 7 dup(" "),"                        ",13,10
             
-    fase3   db 7 dup(" ")," ___               ____",13,10
-            db 7 dup(" "),"| __|_ _ ___ ___  |__ /",13,10
-            db 7 dup(" "),"| _/ _` (_-</ -_)  |_ \",13,10
-            db 7 dup(" "),"|_|\__,_/__/\___| |___/",13,10
-            db 7 dup(" "),"                       ",13,10
-            db 7 dup(" "),"                       ",13,10
+    fase3   db 7 dup(" ")," ___                ____",13,10
+            db 7 dup(" "),"| __|_ _ ___ ___   |__ /",13,10
+            db 7 dup(" "),"| _/ _` (_-</ -_)   |_ \",13,10
+            db 7 dup(" "),"|_|\__,_/__/\___|  |___/",13,10
+            db 7 dup(" "),"                        ",13,10
+            db 7 dup(" "),"                        ",13,10
 
     fase_string_length equ $-fase3
     
@@ -134,6 +134,11 @@
     
     time_str db "TEMPO:"
     time_str_len equ $-time_str
+    
+    score dw 0
+    score_buffer db '00000'
+    score_buffer_len equ $-score_buffer
+
     
 .code
 MAIN:
@@ -181,13 +186,30 @@ SELECT_OPTION:
     mov ah, menu
     cmp ah, 1
     je FINISH
+    call CLEAR_SCREEN
     
     call RENDER_FASE
 
     ;call RESET
-
-    GAME_LOOP:
+    call RESET_SHIP
+    ;call RESET
     
+    GAME_LOOP:
+    call SLEEP
+    ;call UPDATE
+    call RENDER_TIME
+    call UPDATE_TIME
+    call UPDATE_SHIP
+    ;call UPDATE
+    
+    jmp GAME_LOOP
+
+FINISH:
+    CALL END_GAME
+    
+    ret
+
+SLEEP proc
     push ax
     push cx
     push dx
@@ -200,17 +222,7 @@ SELECT_OPTION:
     pop dx
     pop cx
     pop ax
-    ;call UPDATE
-    call RENDER_TIME
-    call UPDATE_TIME
-
-    jmp GAME_LOOP
-
-FINISH:
-    CALL END_GAME
-    
-    ret
-    
+SLEEP endp
 ; Procedimento para exibir os botoes INICIAR e SAIR
 ; se menu == 0 o bot?o jogar fica vermelho
 ; se menu == 1 o botao sair fica vermelho
@@ -672,6 +684,8 @@ RENDER_FASE proc
 
     call CLEAR_SCREEN
 
+    mov ship_pos, 0
+    
     ; Print Sector
     xor ax, ax
     mov al, fase
@@ -817,6 +831,171 @@ SAVE_TIMEOUT:
 
 END_TIME:
     pop ax
+    ret
+endp
+
+
+
+UPDATE_SHIP proc
+    push si
+    push di
+    push ax
+    push bx
+
+    mov ah, 1H
+    int 16H
+    jz END_SHIP_UPDATE
+
+    call HANDLE_CONTROLS
+    xor ah, ah
+    int 16H
+
+    call RENDER_SHIP
+
+END_SHIP_UPDATE:
+    
+    pop bx
+    pop ax
+    pop di
+    pop si
+    ret
+endp
+
+
+; Proc para controle da nave
+HANDLE_CONTROLS proc
+    push si
+    push di
+    push ax
+    push bx
+    push cx
+
+    mov si, offset ship_pos
+    mov di, [si]
+
+    cmp ah, 48H
+    je MOVE_UP
+
+    cmp ah, 50H
+    je MOVE_DOWN
+    
+    cmp ah, 39H
+    je FIRE
+    
+    cmp al, 'q'
+    jne END_CONTROLS
+
+    xor ax, ax
+    int 16h
+    call END_GAME
+
+MOVE_UP:
+    mov al, 1
+    call CLEAR_SPRITE
+
+    mov bx, [ship_pos]
+    cmp bx, 320 * 20 + 47
+    jb END_CONTROLS
+    je END_CONTROLS
+
+    mov ah, 1
+    mov bx, ship_speed
+    call MOVE_SPRITE
+    jmp END_CONTROLS
+
+MOVE_DOWN:
+    mov al, 1
+    call CLEAR_SPRITE
+
+    mov bx, [ship_pos]
+    cmp bx, 320 * 160 + 47
+    je END_CONTROLS
+    ja END_CONTROLS
+
+    xor ah, ah
+    mov bx, ship_speed
+    call MOVE_SPRITE
+    jmp END_CONTROLS
+
+FIRE:
+    ;call SHOOT
+
+END_CONTROLS:
+    pop cx
+    pop bx
+    pop ax
+    pop di
+    pop si
+    ret
+endp
+
+; AL = axis (0 is X, 1 is Y)
+; AH = direction (0 is positive, 1 is negative)
+; SI = position pointer
+; BX = increment
+MOVE_SPRITE proc
+    push si
+    push ax
+    push bx
+
+    mov cx, [si]
+    cmp al, 0
+    jne MOVE_Y_AXIS
+    jmp CHECK_DIRECTION
+
+MOVE_Y_AXIS:
+    push ax
+    mov ax, 320
+    mul bx
+    mov bx, ax
+    pop ax
+
+CHECK_DIRECTION:
+    cmp ah, 0
+    jne MOVE_NEGATIVE
+    add cx, bx
+    jmp SAVE_POS
+
+MOVE_NEGATIVE:
+    sub cx, bx
+
+SAVE_POS:
+    mov [si], cx
+
+    pop bx
+    pop ax
+    pop si
+    ret
+endp
+
+RENDER_SHIP proc
+    push si
+    push di
+    push bx
+    push ax
+    
+    mov ax, ship_pos
+    mov di, ax
+    call CLEAR_SPRITE
+
+    mov si, offset ship_sprite
+    call RENDER_SPRITE
+
+    pop ax
+    pop bx
+    pop di
+    pop si
+    ret
+endp
+
+RESET_SHIP proc
+    push si
+    push bx
+
+    mov ship_pos, 320 * 95 + 41 ; Ship stating position
+    
+    pop bx
+    pop si
     ret
 endp
 
