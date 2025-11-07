@@ -80,6 +80,7 @@
                 db 0,0,0,0,0,1,1,1,1,0,0,0,0,0
     ship_pos dw 75*320 + 0 ; posi??o inicial (linha 100, x = 300)
     ship_speed EQU 2
+
     SCREEN_W    EQU 320
     SCREEN_H    EQU 200
 
@@ -457,15 +458,15 @@ MOVE_WRAP_LEFT_AND_DRAW proc
     mov ax, di
     call CLEAR_SPRITE
 
-    mov ax, [bx]            ; AX = pos
+    mov ax, [bx]            ; AX = pos 
     cmp ax, bp              ; pos <= L ?
-    ja  MOVE_LEFT
+    ja  MOVE_LEFT_MENU
     ; wrap p/ direita
     mov ax, dx              ; AX = R
     mov [bx], ax
     jmp DRAW
 
-MOVE_LEFT:
+MOVE_LEFT_MENU:
     dec ax
     mov [bx], ax
 
@@ -565,13 +566,13 @@ MOVE_WRAP_RIGHT_AND_DRAW proc
 
     mov ax, [bx]            ; AX = posi??o atual
     cmp ax, dx              ; pos >= R ?
-    jb  MOVE_RIGHT        ; se pos < R, ainda pode andar p/ direita
+    jb  MOVE_RIGHT_MENU        ; se pos < R, ainda pode andar p/ direita
     ; wrap para a esquerda
     mov ax, cx              ; AX = L
     mov [bx], ax
     jmp DRAW_RIGHT
 
-MOVE_RIGHT:
+MOVE_RIGHT_MENU:
     inc ax
     mov [bx], ax
 
@@ -879,8 +880,14 @@ HANDLE_CONTROLS proc
     cmp ah, 50H
     je MOVE_DOWN
     
-    cmp ah, 39H
-    je FIRE
+    cmp ah, 4BH
+    je MOVE_LEFT
+
+    cmp ah, 4DH
+    je MOVE_RIGHT
+
+    ;cmp ah, 39H
+    ;je FIRE
     
     cmp al, 'q'
     jne END_CONTROLS
@@ -889,36 +896,23 @@ HANDLE_CONTROLS proc
     int 16h
     call END_GAME
 
-MOVE_UP:
-    mov al, 1
-    call CLEAR_SPRITE
-
-    mov bx, [ship_pos]
-    cmp bx, 320 * 20 + 47
-    jb END_CONTROLS
-    je END_CONTROLS
-
-    mov ah, 1
-    mov bx, ship_speed
-    call MOVE_SPRITE
-    jmp END_CONTROLS
-
-MOVE_DOWN:
-    mov al, 1
-    call CLEAR_SPRITE
-
-    mov bx, [ship_pos]
-    cmp bx, 320 * 160 + 47
-    je END_CONTROLS
-    ja END_CONTROLS
-
-    xor ah, ah
-    mov bx, ship_speed
-    call MOVE_SPRITE
-    jmp END_CONTROLS
-
 FIRE:
     ;call SHOOT
+    jmp END_CONTROLS
+
+MOVE_UP:
+    call MOVE_UP_PROC
+    jmp END_CONTROLS
+MOVE_DOWN:
+    call MOVE_DOWN_PROC
+    jmp END_CONTROLS
+MOVE_LEFT:
+    call MOVE_LEFT_PROC
+    jmp END_CONTROLS
+
+MOVE_RIGHT:
+    call MOVE_RIGHT_PROC
+    jmp END_CONTROLS
 
 END_CONTROLS:
     pop cx
@@ -996,6 +990,69 @@ RESET_SHIP proc
     
     pop bx
     pop si
+    ret
+endp
+
+MOVE_UP_PROC proc
+        mov al, 1
+    call CLEAR_SPRITE
+    mov bx, [ship_pos]
+    cmp bx, 320 * 20 + 47
+    jb END_UP
+    mov ah, 1
+    mov bx, ship_speed
+    call MOVE_SPRITE
+END_UP:
+    ret
+endp
+
+MOVE_DOWN_PROC proc
+    mov al, 1
+    call CLEAR_SPRITE
+    mov bx, [ship_pos]
+    cmp bx, 320 * 160 + 47
+    jae END_DOWN
+    xor ah, ah
+    mov bx, ship_speed
+    call MOVE_SPRITE
+END_DOWN:
+    ret
+endp
+
+MOVE_LEFT_PROC proc
+    call CLEAR_SPRITE
+    ; x = ship_pos % 320  (quociente=AX=y, resto=DX=x)
+    mov ax, [ship_pos]
+    xor dx, dx
+    mov cx, 320
+    div cx
+    mov bx, 4              
+    cmp dx, bx
+    jbe END_LEFT
+    mov ah, 1                   ; direção negativa (esquerda)
+    mov bx, ship_speed
+    mov al, 0                   ; eixo X
+    call MOVE_SPRITE
+END_LEFT:
+    ret
+endp
+
+MOVE_RIGHT_PROC proc
+    call CLEAR_SPRITE
+    ; x = ship_pos % 320
+    mov ax, [ship_pos]
+    xor dx, dx
+    mov cx, 320
+    div cx                       ; DX = x
+    ; se x >= RIGHT_X (306), não anda para a direita
+    mov bx, 320-18               ; RIGHT_X (ajuste se tua SPR_W mudar)
+    cmp dx, bx
+    jae END_RIGHT
+    xor ah, ah                   ; direção positiva (direita)
+    mov bx, ship_speed
+    mov al, 0                   ; eixo X
+    call MOVE_SPRITE
+END_RIGHT:
     ret
 endp
 
