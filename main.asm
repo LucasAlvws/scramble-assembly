@@ -46,59 +46,51 @@
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
     meteor_pos dw 100*320 + 300 ; posi??o inicial (linha 100, x = 300)
 
-    alien_sprite    db 0,0,0,0AH,0AH,0AH,2,0EH,0EH,0EH,0EH,0,0,0
-                    db 0,0,0,2,2,2,2,2,2,2,2,0EH,0EH,0
-                    db 0,0,2,2,2,2,2,2,2,2,2,2,0EH,0
-                    db 0,0,2,2,2,2,2,2,2,2,2,2,2,0EH
-                    db 0AH,0AH,0AH,5,5,0AH,2,0EH,0EH,5,5,0EH,0EH,0EH
-                    db 0AH,0AH,0AH,5,5,0AH,2,0EH,0EH,5,5,0EH,0EH,0EH
-                    db 0AH,0AH,0AH,0AH,0AH,0AH,2,0EH,0EH,0EH,0EH,0EH,0EH,0EH
-                    db 0,0AH,0AH,0AH,2,5,5,2,0EH,0EH,0EH,0,0,0
-                    db 0,0AH,0AH,0AH,2,5,5,2,0EH,0EH,0EH,0,0,0
-                    db 0,0,5,0AH,0AH,5,5,2,0EH,0EH,0EH,0,0,0
-                    db 0,0,5,0AH,0AH,5,5,2,0EH,0EH,0EH,0,0,0
-                    db 0,0,5,0,2,5,5,2,0EH,0EH,0EH,0,0,0
-                    db 0,0,5,0,2,5,5,2,0EH,0EH,0EH,0,0,0
-                    db 0,0,0,0,0AH,0AH,2,0EH,0EH,0,0,0,0,0
+    alien_sprite    db 0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0
+                    db 0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0
+                    db 0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0
+                    db 0EH,2,2,2,2,2,2,2,2,2,2,2,2,0EH
+                    db 0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH
+                    db 0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH
+                    db 0EH,0EH,0EH,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0EH,0EH,0EH
+                    db 0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0
+                    db 0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0
+                    db 0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0
+                    db 0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0
+                    db 0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0
+                    db 0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0
+                    db 0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0
 
     alien_pos dw 125*320 + 300 ; posição inicial (linha 125, x = 300)
     alien_dir db 0  ; direção do alien (0=esquerda, 1=direita)
     
     ; Sprite da nave principal (29x13 pixels) - baseado no exemplo
-    ship_sprite db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,15,15,15,15,15,15,15,15,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,15,15,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,15,15,15,15,15,15,15,15
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,15,15,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15,15,15,15,15,15,15,15,15,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    
-    ; Sprite menor para vidas (19x7 pixels) - baseado na nave
-    life_sprite db 0,0,0,0,0,15,15,15,15,15,15,15,15,15,15,0,0,0,0
-                db 0,0,0,0,0,0,0,15,15,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,15,15,15,15,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,15,15,15,15,15,15,15,15,15,15,0,0
-                db 0,0,0,0,0,0,0,15,15,15,15,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,15,15,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,15,15,15,15,15,15,15,15,15,15,0,0,0,0
+    ship_sprite db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
+            db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
+            db 15,15,15,0,0,0,0,0,0,0,0,0,0,0
+            db 0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0
+            db 0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0
+            db 0,1,15,15,15,15,15,15,0,0,0,0,0,0
+            db 0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15
+            db 0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15
+            db 0,1,15,15,15,15,15,15,0,0,0,0,0,0
+            db 0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0
+            db 0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0
+            db 15,15,15,0,0,0,0,0,0,0,0,0,0,0
+            db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
+            db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
     
     ship_pos dw 95*320 + 41 ; posição inicial (linha 95, coluna 41)
-    ship_speed EQU 2
-    lives db 3  ; número de vidas
+    ship_speed EQU 4
+
+    LIFES_START EQU 3
+    lives db LIFES_START  ; número de vidas
 
     SCREEN_W    EQU 320
     SCREEN_H    EQU 200
 
-    SHIP_W      EQU 29
-    SHIP_H      EQU 13
-    LIFE_W      EQU 19
-    LIFE_H      EQU 7
+    SHIP_W      EQU 14
+    SHIP_H      EQU 14
     SPR_W       EQU 14  ; para meteoro e alien
     SPR_H       EQU 14
     RIGHT_X     EQU (SCREEN_W - SPR_W)   ; ?ltimo X v?lido p/ canto esquerdo do sprite
@@ -142,7 +134,9 @@
     
     fase_vec dw offset fase1, offset fase2, offset fase3
     
-    time db 60
+    SECONDS_START  EQU 60
+
+    time db SECONDS_START
     timeout db 0
     time_buffer db '00'
     time_buffer_len equ $-time_buffer
@@ -174,68 +168,68 @@
         db 320 dup (6)
         db 320 dup (6)
         db 320 dup (6)
-        db 25 dup(6),3 dup(0BH),22 dup(6),2 dup(0BH),28 dup(6),4 dup(0BH),24 dup(6),3 dup(0BH),26 dup(6),2 dup(0BH),30 dup(6),4 dup(0BH),23 dup(6),3 dup(0BH),27 dup(6),2 dup(0BH),25 dup(6),4 dup(0BH),20 dup(6)
-        db 18 dup(6),6 dup(0BH),16 dup(6),8 dup(0BH),20 dup(6),7 dup(0BH),18 dup(6),9 dup(0BH),22 dup(6),8 dup(0BH),19 dup(6),7 dup(0BH),21 dup(6),10 dup(0BH),17 dup(6),9 dup(0BH),20 dup(6),8 dup(0BH),18 dup(6)
-        db 12 dup(6),12 dup(0BH),14 dup(6),14 dup(0BH),16 dup(6),11 dup(0BH),15 dup(6),13 dup(0BH),18 dup(6),12 dup(0BH),16 dup(6),14 dup(0BH),17 dup(6),15 dup(0BH),14 dup(6),13 dup(0BH),15 dup(6),12 dup(0BH),13 dup(6)
-        db 8 dup(6),18 dup(0BH),10 dup(6),20 dup(0BH),12 dup(6),17 dup(0BH),11 dup(6),19 dup(0BH),14 dup(6),18 dup(0BH),13 dup(6),20 dup(0BH),12 dup(6),19 dup(0BH),11 dup(6),18 dup(0BH),10 dup(6),17 dup(0BH),9 dup(6)
-        db 4 dup(6),25 dup(0BH),6 dup(6),28 dup(0BH),8 dup(6),24 dup(0BH),7 dup(6),26 dup(0BH),9 dup(6),25 dup(0BH),8 dup(6),27 dup(0BH),7 dup(6),26 dup(0BH),6 dup(6),24 dup(0BH),5 dup(6)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
-        db 320 dup (0BH)
+        db 25 dup(6),3 dup(05H),22 dup(6),2 dup(0DH),28 dup(6),4 dup(05H),24 dup(6),3 dup(0DH),26 dup(6),2 dup(05H),30 dup(6),4 dup(0DH),23 dup(6),3 dup(05H),27 dup(6),2 dup(0DH),25 dup(6),4 dup(05H),20 dup(6)
+        db 18 dup(6),6 dup(0DH),16 dup(6),8 dup(05H),20 dup(6),7 dup(0DH),18 dup(6),9 dup(05H),22 dup(6),8 dup(0DH),19 dup(6),7 dup(05H),21 dup(6),10 dup(0DH),17 dup(6),9 dup(05H),20 dup(6),8 dup(0DH),18 dup(6)
+        db 12 dup(6),12 dup(05H),14 dup(6),14 dup(0DH),16 dup(6),11 dup(05H),15 dup(6),13 dup(0DH),18 dup(6),12 dup(05H),16 dup(6),14 dup(0DH),17 dup(6),15 dup(05H),14 dup(6),13 dup(0DH),15 dup(6),12 dup(05H),13 dup(6)
+        db 8 dup(6),18 dup(0DH),10 dup(6),20 dup(05H),12 dup(6),17 dup(0DH),11 dup(6),19 dup(05H),14 dup(6),18 dup(0DH),13 dup(6),20 dup(05H),12 dup(6),19 dup(0DH),11 dup(6),18 dup(05H),10 dup(6),17 dup(0DH),9 dup(6)
+        db 4 dup(6),25 dup(05H),6 dup(6),28 dup(0DH),8 dup(6),24 dup(05H),7 dup(6),26 dup(0DH),9 dup(6),25 dup(05H),8 dup(6),27 dup(0DH),7 dup(6),26 dup(05H),6 dup(6),24 dup(0DH),5 dup(6)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
+        db 320 dup (0DH)
+        db 320 dup (05H)
     
     terrain_pos dw 320 * 180  ; Linha 130 (1/3 superior da tela)
 
@@ -302,9 +296,6 @@ SELECT_OPTION:
     call CLEAR_SCREEN  ; Limpa duas vezes para garantir
 
     call RESET_SHIP
-    
-    ; Renderiza a nave inicial antes do loop
-    call RENDER_SHIP
     
     GAME_LOOP:
     call RENDER_TERRAIN  ; Renderiza o terreno primeiro
@@ -497,46 +488,6 @@ DRAW_SHIP_LINE:
     ret
 RENDER_SHIP_SPRITE endp
 
-; Renderiza sprite de vida (19x7)
-; AX = posição na tela
-; SI = offset do sprite
-RENDER_LIFE_SPRITE proc
-    push bx
-    push cx
-    push dx
-    push di
-    push es
-    push ds
-    push ax
-
-    mov ax, @data
-    mov ds, ax
-
-    mov ax, 0A000h
-    mov es, ax
-
-    pop ax
-    mov di, ax
-    mov dx, LIFE_H
-    push ax
-
-DRAW_LIFE_LINE:
-    mov cx, LIFE_W
-    rep movsb
-    add di, SCREEN_W - LIFE_W
-    dec dx
-    jnz DRAW_LIFE_LINE
-
-    pop ax
-    pop ds  
-    pop es
-    pop di
-    pop dx
-    pop cx
-    pop bx
-    ret
-RENDER_LIFE_SPRITE endp
-
 ; usando o valor aleatorio gerado em N_ALE
 RANDOM_UINT16 proc
     push dx
@@ -638,33 +589,6 @@ CLEAR_SHIP_LINE:
     pop ax
     ret
 CLEAR_SHIP_SPRITE endp
-
-; DI = posição linear do canto esquerdo da vida (19x7)
-CLEAR_LIFE_SPRITE proc
-    push ax
-    push cx
-    push di
-    push es
-    
-    mov ax, 0A000h
-    mov es, ax
-    mov cx, LIFE_H
-
-CLEAR_LIFE_LINE:
-    push cx
-    mov cx, LIFE_W
-    xor al, al
-    rep stosb
-    add di, SCREEN_W - LIFE_W
-    pop cx
-    loop CLEAR_LIFE_LINE
-
-    pop es
-    pop di
-    pop cx
-    pop ax
-    ret
-CLEAR_LIFE_SPRITE endp
 
 ; MOVE_WRAP_LEFT_AND_DRAW
 ; Entradas:
@@ -1087,14 +1011,14 @@ RENDER_LIVES proc
     ; Centro da tela = 160, cada vida ocupa 19 pixels + 6 de espaço = 25
     ; Para 3 vidas: 3*25 = 75 pixels, começa em 160-37 = 123
     mov ax, 5 * SCREEN_W + 123  ; linha 5, coluna 123 (centralizado)
-    mov si, offset life_sprite
+    mov si, offset ship_sprite
 
 RENDER_SINGLE_LIFE:
     push cx
     push ax
     push si
-    mov si, offset life_sprite  ; Resetar SI para o início do sprite
-    call RENDER_LIFE_SPRITE
+    mov si, offset ship_sprite  ; Resetar SI para o início do sprite
+    call RENDER_SPRITE
     pop si
     pop ax
     add ax, 25  ; próxima vida (19 pixels + 6 de espaço)
@@ -1295,7 +1219,6 @@ SAVE_POS:
     pop si
     ret
 endp
-
 RENDER_SHIP proc
     push si
     push di
@@ -1329,9 +1252,9 @@ RESET_GAME proc
     push ax
     
     mov score, 0
-    mov lives, 3
+    mov lives, LIFES_START
     mov fase, 1
-    mov time, 60
+    mov time, SECONDS_START
     mov timeout, 0
     mov terrain_pos, 320 * 130
     
@@ -1399,7 +1322,7 @@ MOVE_UP_PROC proc
     ; Renderiza nave na nova posição
     mov ax, [ship_pos]
     mov si, offset ship_sprite
-    call RENDER_SHIP_SPRITE
+    call RENDER_SHIP
     
 END_UP:
     pop ax
@@ -1419,7 +1342,7 @@ MOVE_DOWN_PROC proc
     
     ; Verifica limites
     mov bx, [ship_pos]
-    cmp bx, 320 * 160 + 47
+    cmp bx, 320 * 115
     jae END_DOWN
     
     ; Move a nave
@@ -1431,7 +1354,7 @@ MOVE_DOWN_PROC proc
     ; Renderiza nave na nova posição
     mov ax, [ship_pos]
     mov si, offset ship_sprite
-    call RENDER_SHIP_SPRITE
+    call RENDER_SHIP
     
 END_DOWN:
     pop ax
@@ -1469,7 +1392,7 @@ MOVE_LEFT_PROC proc
     ; Renderiza nave na nova posição
     mov ax, [ship_pos]
     mov si, offset ship_sprite
-    call RENDER_SHIP_SPRITE
+    call RENDER_SHIP
     
 END_LEFT:
     pop cx
@@ -1510,7 +1433,7 @@ MOVE_RIGHT_PROC proc
     ; Renderiza nave na nova posição
     mov ax, [ship_pos]
     mov si, offset ship_sprite
-    call RENDER_SHIP_SPRITE
+    call RENDER_SHIP
     
 END_RIGHT:
     pop cx
