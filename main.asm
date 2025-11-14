@@ -20,13 +20,10 @@
     btn_sair_length equ $-btn_sair
     CR EQU 13
     LF EQU 10
-    string  db 7 dup(" ")," ___                    ",13,10
-            db 7 dup(" "),"/ __| __ _ _ __ _ _ __  ",13,10
-            db 7 dup(" "),"\__ \/ _| '_/ _` | '  \ ",13,10
-            db 7 dup(" "),"|___/\__|_|_\__,_|_|_|_|",13,10
-            db 7 dup(" "),"     | |__| |___        ",13,10
-            db 7 dup(" "),"     | '_ \ / -_)       ",13,10
-            db 7 dup(" "),"     |_.__/_\___|       ",13,10
+    string  db 2 dup(" "),"  ___                    _    _     ",13,10
+            db 2 dup(" ")," / __| __ _ _ __ _ _ __ | |__| |___ ",13,10
+            db 2 dup(" ")," \__ \/ _| '_/ _` | '  \| '_ \ / -_)",13,10
+            db 2 dup(" ")," |___/\__|_| \__,_|_|_|_|_.__/_\___|",13,10
 
 
     string_length equ $-string
@@ -377,8 +374,8 @@ PRINT_STRING PROC
     push BP
 
     mov ah, 13h         
-    mov al, 1          
-                        
+    mov al, 1   
+       
     xor bh, bh           
     int 10h  ; escreve string          
 
@@ -399,7 +396,7 @@ PRINT_TITLE_MENU proc
     mov bp, offset string
     mov cx, string_length ; tamanho
     mov bl, 02H ; Cor verde (se bit 1 de AL estiver limpo, usamos BL)
-    xor dx, dx ; linha / coluna
+    mov dx, 320*3 ; linha / coluna
     call PRINT_STRING
 
     ret
