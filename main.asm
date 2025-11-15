@@ -63,22 +63,29 @@
     alien_dir db 0  ; direção do alien (0=esquerda, 1=direita)
     
     ; Sprite da nave principal (29x13 pixels) - baseado no exemplo
-    ship_sprite db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
-            db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
-            db 15,15,15,0,0,0,0,0,0,0,0,0,0,0
-            db 0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0
-            db 0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0
-            db 0,1,15,15,15,15,15,15,0,0,0,0,0,0
-            db 0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15
-            db 0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15
-            db 0,1,15,15,15,15,15,15,0,0,0,0,0,0
-            db 0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0
-            db 0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0
-            db 15,15,15,0,0,0,0,0,0,0,0,0,0,0
-            db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
-            db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    
-    ship_pos dw 95*320 + 41 ; posição inicial (linha 95, coluna 41)
+    ship_sprite db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,1,15,15,15,15,15,15,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15,0,0,0,0
+                db 0,0,0,0,0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15,0,0,0,0
+                db 0,0,0,0,0,1,15,15,15,15,15,15,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    ROW_METEOR  EQU 100
+    ROW_ALIEN   EQU 125
+    ROW_SHIP    EQU 75
+    ship_pos_ini EQU ROW_SHIP*320 
+    ship_pos dw ship_pos_ini ; posição inicial (linha 95, coluna 41)
     ship_speed EQU 4
 
     LIFES_START EQU 3
@@ -87,15 +94,10 @@
     SCREEN_W    EQU 320
     SCREEN_H    EQU 200
 
-    SHIP_W      EQU 14
-    SHIP_H      EQU 14
-    SPR_W       EQU 14  ; para meteoro e alien
-    SPR_H       EQU 14
+    SPR_W       EQU 22  ; para meteoro e alien
+    SPR_H       EQU 18
     RIGHT_X     EQU (SCREEN_W - SPR_W)   ; ?ltimo X v?lido p/ canto esquerdo do sprite
 
-    ROW_METEOR  EQU 100
-    ROW_ALIEN   EQU 125
-    ROW_SHIP    EQU 75
 
     ; Limites horizontais por objeto (linha fixa)
     METEOR_L    EQU (ROW_METEOR*SCREEN_W)
@@ -103,9 +105,6 @@
 
     ALIEN_L     EQU (ROW_ALIEN*SCREEN_W)
     ALIEN_R     EQU (ROW_ALIEN*SCREEN_W + RIGHT_X)
-
-    SHIP_L      EQU (ROW_SHIP*SCREEN_W)
-    SHIP_R      EQU (ROW_SHIP*SCREEN_W + RIGHT_X)
 
     fase1   db 7 dup(" ")," ___                  _ ",13,10
             db 7 dup(" "),"| __|_ _ ___ ___     / |",13,10
@@ -300,7 +299,6 @@ SELECT_OPTION:
     call RENDER_STATUS   ; Renderiza score, vidas e tempo
     call UPDATE_TIME
     call UPDATE_SHIP
-    call RENDER_SHIP     ; Renderiza nave por cima do terreno
     
     jmp GAME_LOOP
 
@@ -446,7 +444,7 @@ DRAW_LINE:
 ret
 RENDER_SPRITE endp
 
-; Renderiza sprite da nave (29x13)
+; Renderiza sprite da nave
 ; AX = posição na tela
 ; SI = offset do sprite
 RENDER_SHIP_SPRITE proc
@@ -466,13 +464,13 @@ RENDER_SHIP_SPRITE proc
 
     pop ax
     mov di, ax
-    mov dx, SHIP_H
+    mov dx, SPR_H
     push ax
 
 DRAW_SHIP_LINE:
-    mov cx, SHIP_W
+    mov cx, SPR_W
     rep movsb
-    add di, SCREEN_W - SHIP_W
+    add di, SCREEN_W - SPR_W
     dec dx
     jnz DRAW_SHIP_LINE
 
@@ -570,14 +568,14 @@ CLEAR_SHIP_SPRITE proc
     
     mov ax, 0A000h
     mov es, ax
-    mov cx, SHIP_H
+    mov cx, SPR_H
 
 CLEAR_SHIP_LINE:
     push cx
-    mov cx, SHIP_W
+    mov cx, SPR_W
     xor al, al
     rep stosb
-    add di, SCREEN_W - SHIP_W
+    add di, SCREEN_W - SPR_W
     pop cx
     loop CLEAR_SHIP_LINE
 
@@ -604,6 +602,30 @@ MOVE_WRAP_LEFT_AND_DRAW proc
     push si
     push di
     push bp
+
+;     mov si, offset ship_pos
+;     mov di, [si]
+;     ; Verifica limites: x = ship_pos % 320
+;     mov ax, [ship_pos]
+;     xor dx, dx
+;     mov cx, 320
+;     div cx                       ; DX = x
+;     ; se x >= (320-SPR_W), não anda para a direita
+;     mov bx, 320 - SPR_W         ; limite direito considerando largura da nave
+;     cmp dx, bx
+;     jb MOVE_RIGHT_MENU
+;     ; wrap para a esquerda
+;     mov di, ship_pos
+;     call CLEAR_SPRITE
+;     mov ship_pos, ship_pos_ini            ; AX = L
+
+; MOVE_RIGHT_MENU:
+;     call MOVE_RIGHT_PROC
+
+; DRAW_RIGHT:
+    
+;     call RENDER_SHIP
+
 
     mov bp, ax              ; BP = L
     mov di, [bx]            ; DI = pos atual
@@ -711,26 +733,28 @@ MOVE_WRAP_RIGHT_AND_DRAW proc
     push si
     push di
 
-    mov cx, ax              ; CX = L (guarda limite esquerdo)
-    mov di, [bx]            ; DI = posi??o atual
-    mov ax, di
-    call CLEAR_SPRITE       ; apaga sprite antigo
-
-    mov ax, [bx]            ; AX = posi??o atual
-    cmp ax, dx              ; pos >= R ?
-    jb  MOVE_RIGHT_MENU        ; se pos < R, ainda pode andar p/ direita
+    mov si, offset ship_pos
+    mov di, [si]
+    ; Verifica limites: x = ship_pos % 320
+    mov ax, [ship_pos]
+    xor dx, dx
+    mov cx, 320
+    div cx                       ; DX = x
+    ; se x >= (320-SPR_W), não anda para a direita
+    mov bx, 320 - SPR_W         ; limite direito considerando largura da nave
+    cmp dx, bx
+    jb MOVE_RIGHT_MENU
     ; wrap para a esquerda
-    mov ax, cx              ; AX = L
-    mov [bx], ax
-    jmp DRAW_RIGHT
+    mov di, ship_pos
+    call CLEAR_SPRITE
+    mov ship_pos, ship_pos_ini            ; AX = L
 
 MOVE_RIGHT_MENU:
-    inc ax
-    mov [bx], ax
+    call MOVE_RIGHT_PROC
 
 DRAW_RIGHT:
-    ; AX j? tem a posi??o atualizada; SI j? tem o sprite
-    call RENDER_SPRITE
+    
+    call RENDER_SHIP
 
     pop di
     pop si
@@ -754,10 +778,6 @@ MOVE_MENU PROC
     mov dx, ALIEN_R
     call MOVE_BOUNCE_X_AND_DRAW
 
-    mov bx, OFFSET ship_pos
-    mov si, OFFSET ship_sprite
-    mov ax, SHIP_L
-    mov dx, SHIP_R
     call MOVE_WRAP_RIGHT_AND_DRAW
     ; Delay
     ; usa interrup??o 15h que faz o delay
@@ -1016,7 +1036,7 @@ RENDER_SINGLE_LIFE:
     push ax
     push si
     mov si, offset ship_sprite  ; Resetar SI para o início do sprite
-    call RENDER_SPRITE
+    call RENDER_SHIP_SPRITE
     pop si
     pop ax
     add ax, 25  ; próxima vida (19 pixels + 6 de espaço)
@@ -1110,11 +1130,11 @@ UPDATE_SHIP proc
     int 16H
 
 END_SHIP_UPDATE:
-    
     pop bx
     pop ax
     pop di
     pop si
+    call RENDER_SHIP
     ret
 endp
 
@@ -1217,6 +1237,7 @@ SAVE_POS:
     pop si
     ret
 endp
+
 RENDER_SHIP proc
     push si
     push di
@@ -1238,7 +1259,7 @@ RESET_SHIP proc
     push si
     push bx
 
-    mov ship_pos, 320 * 95 + 41 ; Ship stating position
+    mov ship_pos, ship_pos_ini ; Ship stating position
     
     pop bx
     pop si
@@ -1302,10 +1323,6 @@ MOVE_UP_PROC proc
     push si
     push ax
     
-    ; Limpa nave na posição atual
-    mov di, [ship_pos]
-    call CLEAR_SHIP_SPRITE
-    
     ; Verifica limites
     mov bx, [ship_pos]
     cmp bx, 320 * 20 + 47
@@ -1317,10 +1334,6 @@ MOVE_UP_PROC proc
     mov bx, ship_speed
     call MOVE_SPRITE
     
-    ; Renderiza nave na nova posição
-    mov ax, [ship_pos]
-    mov si, offset ship_sprite
-    call RENDER_SHIP
     
 END_UP:
     pop ax
@@ -1334,10 +1347,6 @@ MOVE_DOWN_PROC proc
     push si
     push ax
     
-    ; Limpa nave na posição atual
-    mov di, [ship_pos]
-    call CLEAR_SHIP_SPRITE
-    
     ; Verifica limites
     mov bx, [ship_pos]
     cmp bx, 320 * 115
@@ -1348,11 +1357,7 @@ MOVE_DOWN_PROC proc
     xor ah, ah
     mov bx, ship_speed
     call MOVE_SPRITE
-    
-    ; Renderiza nave na nova posição
-    mov ax, [ship_pos]
-    mov si, offset ship_sprite
-    call RENDER_SHIP
+
     
 END_DOWN:
     pop ax
@@ -1368,10 +1373,7 @@ MOVE_LEFT_PROC proc
     push dx
     push cx
     
-    ; Limpa nave na posição atual
-    mov di, [ship_pos]
-    call CLEAR_SHIP_SPRITE
-    
+
     ; Verifica limites: x = ship_pos % 320
     mov ax, [ship_pos]
     xor dx, dx
@@ -1386,12 +1388,7 @@ MOVE_LEFT_PROC proc
     mov bx, ship_speed
     mov al, 0                   ; eixo X
     call MOVE_SPRITE
-    
-    ; Renderiza nave na nova posição
-    mov ax, [ship_pos]
-    mov si, offset ship_sprite
-    call RENDER_SHIP
-    
+
 END_LEFT:
     pop cx
     pop dx
@@ -1407,18 +1404,14 @@ MOVE_RIGHT_PROC proc
     push ax
     push dx
     push cx
-
-    ; Limpa nave na posição atual
-    mov di, [ship_pos]
-    call CLEAR_SHIP_SPRITE
     
     ; Verifica limites: x = ship_pos % 320
     mov ax, [ship_pos]
     xor dx, dx
     mov cx, 320
     div cx                       ; DX = x
-    ; se x >= (320-SHIP_W), não anda para a direita
-    mov bx, 320 - SHIP_W         ; limite direito considerando largura da nave
+    ; se x >= (320-SPR_W), não anda para a direita
+    mov bx, 320 - SPR_W         ; limite direito considerando largura da nave
     cmp dx, bx
     jae END_RIGHT
     
@@ -1428,10 +1421,6 @@ MOVE_RIGHT_PROC proc
     mov al, 0                   ; eixo X
     call MOVE_SPRITE
     
-    ; Renderiza nave na nova posição
-    mov ax, [ship_pos]
-    mov si, offset ship_sprite
-    call RENDER_SHIP
     
 END_RIGHT:
     pop cx
