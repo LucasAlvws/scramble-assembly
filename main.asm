@@ -66,6 +66,7 @@
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
     alien_pos dw 125*320 + 300 ; posição inicial (linha 125, x = 300)
     alien_dir db 0  ; direção do alien (0=esquerda, 1=direita)
@@ -642,47 +643,77 @@ MOVE_BOUNCE_X_AND_DRAW proc
     push dx
     push si
     push di
+    push bp
 
-    mov cx, ax              ; CX = L (guarda L)
-    mov di, [bx]            ; DI = pos atual
-    mov ax, di
-    call CLEAR_SPRITE
+    mov cx, ax              ; CX = limite esquerdo (coordenada X)
+    mov di, dx              ; DI = limite direito (coordenada X)
+    
+    ; Verifica limites: x = pos % 320
+    mov ax, [bx]
+    xor dx, dx
+    mov bp, 320
+    div bp                  ; DX = x atual (coordenada X)
+    
+    ; Verifica bounce esquerdo
+    cmp dx, cx              ; compara X atual com X limite esquerdo
+    jbe BOUNCE_LEFT
+    
+    ; Verifica bounce direito
+    cmp dx, di              ; compara X atual com X limite direito
+    jae BOUNCE_RIGHT
+    jmp MOVE_BOUNCE_MENU
 
-    mov ax, [bx]            ; AX = pos
+BOUNCE_LEFT:
+    ; chegou na borda esquerda, muda direção para direita
+    ; BP foi usado para a chamada anterior mas preciso recuperar o ponteiro da direção
+    ; Vou usar o parâmetro BP original que foi passado na chamada
+    mov al, 1               ; direção = direita
+    jmp SET_DIRECTION
 
-    ; borda esquerda
-    cmp ax, cx
-    ja  CHECK_RIGHT
-    mov ax, cx              ; clamp = L
-    mov [bx], ax
-    mov byte ptr [bp], 1    ; ir para direita
-    jmp DECIDE
+BOUNCE_RIGHT:
+    ; chegou na borda direita, muda direção para esquerda  
+    mov al, 0               ; direção = esquerda
 
-CHECK_RIGHT:
-    ; borda direita
-    cmp ax, dx
-    jb  DECIDE
-    mov ax, dx              ; clamp = R
-    mov [bx], ax
-    mov byte ptr [bp], 0    ; ir para esquerda
+SET_DIRECTION:
+    ; BP original está na pilha, preciso acessar diferente
+    ; Vou usar uma abordagem mais simples - usar a variável global alien_dir
+    mov alien_dir, al       ; atualiza direção global
 
-DECIDE:
-    mov dl, byte ptr [bp]   ; DL = dir (0 / 1)
+MOVE_BOUNCE_MENU:
+    ; configura parâmetros para movimento
+    push bx                 ; salva BX original
+    push di                 ; salva DI original
+    push cx                 ; salva CX original
+    
+    mov dl, alien_dir       ; DL = dir (0=esq, 1=dir)
     cmp dl, 1
-    jz  RIGHT
-    ; esquerda
-    dec ax
-    mov [bx], ax
-    jmp DRAW_BOUNCE
+    jz  MOVE_RIGHT_BOUNCE
+    
+    ; move para esquerda usando MOVE_LEFT_PROC
+    mov ax, cx              ; AX = limite esquerdo em coordenada X (do stack)
+    mov cx, 1               ; velocidade = 1 pixel  
+    mov dx, ax              ; limite esquerdo em coordenada X
+    call MOVE_LEFT_PROC
+    jmp RESTORE_BOUNCE
 
-RIGHT:
-    inc ax
-    mov [bx], ax
+MOVE_RIGHT_BOUNCE:
+    ; move para direita usando MOVE_RIGHT_PROC
+    mov cx, 1               ; velocidade = 1 pixel
+    mov dx, di              ; limite direito em coordenada X
+    call MOVE_RIGHT_PROC
+
+RESTORE_BOUNCE:
+    pop cx                  ; restaura CX
+    pop di                  ; restaura DI
+    pop bx                  ; restaura BX
 
 DRAW_BOUNCE:
-    ; AX j? tem pos atualizada
+    ; Renderiza sprite na nova posição
+    mov ax, [bx]            ; AX = nova posição
+    ; SI já contém o offset do sprite
     call RENDER_SPRITE
 
+    pop bp
     pop di
     pop si
     pop dx
@@ -717,6 +748,9 @@ MOVE_WRAP_RIGHT_AND_DRAW proc
     mov ship_pos, ship_pos_ini            ; AX = L
 
 MOVE_RIGHT_MENU:
+    mov bx, OFFSET ship_pos     ; ponteiro para posição da nave
+    mov cx, ship_speed          ; velocidade da nave
+    mov dx, 320 - SPR_W         ; limite direito
     call MOVE_RIGHT_PROC
 
 DRAW_RIGHT:
@@ -742,8 +776,8 @@ MOVE_MENU PROC
     mov bx, OFFSET alien_pos
     mov bp, OFFSET alien_dir
     mov si, OFFSET alien_sprite
-    mov ax, ALIEN_L
-    mov dx, ALIEN_R
+    mov ax, 4                       ; limite esquerdo (coordenada X)
+    mov dx, 298                     ; limite direito (coordenada X)
     call MOVE_BOUNCE_X_AND_DRAW
 
     call MOVE_WRAP_RIGHT_AND_DRAW
@@ -1158,6 +1192,9 @@ MOVE_LEFT:
     jmp END_CONTROLS
 
 MOVE_RIGHT:
+    mov bx, OFFSET ship_pos     ; ponteiro para posição da nave
+    mov cx, ship_speed          ; velocidade da nave
+    mov dx, 320 - SPR_W         ; limite direito
     call MOVE_RIGHT_PROC
     jmp END_CONTROLS
 
@@ -1405,30 +1442,38 @@ END_LEFT:
 endp
 
 MOVE_RIGHT_PROC proc
+    ; Entradas:
+    ;   BX = ponteiro para posição (ex.: OFFSET alien_pos)
+    ;   CX = velocidade (ex.: 1)
+    ;   DX = limite direito em coordenada X (ex.: 320-SPR_W)
     push di
     push si
     push ax
     push dx
     push cx
-    
-    ; Verifica limites: x = ship_pos % 320
-    mov ax, [ship_pos]
+    push bp
+
+    mov bp, cx              ; BP = velocidade
+    mov di, dx              ; DI = limite direito
+
+    ; Verifica limites: x = pos % 320
+    mov ax, [bx]            ; AX = posição atual
     xor dx, dx
     mov cx, 320
-    div cx                       ; DX = x
-    ; se x >= (320-SPR_W), não anda para a direita
-    mov bx, 320 - SPR_W         ; limite direito considerando largura da nave
-    cmp dx, bx
+    div cx                  ; DX = coordenada X
+    
+    cmp dx, di              ; compara com limite direito
     jae END_RIGHT
     
-    ; Move a nave
-    xor ah, ah                   ; direção positiva (direita)
-    mov bx, ship_speed
-    mov al, 0                   ; eixo X
+    ; Move para a direita
+    mov si, bx              ; SI = ponteiro para posição
+    xor ah, ah              ; direção positiva (direita)
+    mov bx, bp              ; BX = velocidade
+    mov al, 0               ; eixo X
     call MOVE_SPRITE
-    
-    
+
 END_RIGHT:
+    pop bp
     pop cx
     pop dx
     pop ax
