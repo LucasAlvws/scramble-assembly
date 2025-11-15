@@ -28,36 +28,44 @@
 
 
     string_length equ $-string
-    meteor_sprite   db 0,0,0,0,0,0,0,1,1,0,0,0,0,0
-                    db 0,0,0,0,1,1,4,4,4,1,0,0,0,0
-                    db 0,0,0,1,4,4,4,4,4,4,1,0,1,1
-                    db 0,0,1,4,4,4,5,5,4,4,4,1,0,0
-                    db 0,1,4,4,5,5,5,5,5,4,4,1,0,0
-                    db 0,1,4,4,5,5,5,5,5,5,4,1,5,5
-                    db 0,1,4,4,4,5,5,5,5,4,4,1,4,5
-                    db 0,0,1,4,4,4,4,5,4,4,1,0,0,0
-                    db 0,0,1,4,4,4,4,4,4,4,1,0,1,5
-                    db 0,0,0,1,4,4,4,4,4,1,0,0,0,0
-                    db 0,0,0,0,1,4,4,4,1,0,4,4,0,0
-                    db 0,0,0,0,0,1,1,1,0,0,1,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    meteor_pos dw 100*320 + 300 ; posi??o inicial (linha 100, x = 300)
+    meteor_sprite   db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,1,1,4,4,4,1,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,1,4,4,4,4,4,4,1,0,1,1,0,0,0,0,0
+                    db 0,0,0,0,0,1,4,4,4,5,5,4,4,4,1,0,0,0,0,0,0,0
+                    db 0,0,0,0,1,4,4,5,5,5,5,5,4,4,1,0,0,0,0,0,0,0
+                    db 0,0,0,0,1,4,4,5,5,5,5,5,5,4,1,5,5,0,0,0,0,0
+                    db 0,0,0,0,1,4,4,4,5,5,5,5,4,4,1,4,5,0,0,0,0,0
+                    db 0,0,0,0,0,1,4,4,4,4,5,4,4,1,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,1,4,4,4,4,4,4,4,1,0,1,5,0,0,0,0,0
+                    db 0,0,0,0,0,0,1,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,1,4,4,4,1,0,4,4,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
-    alien_sprite    db 0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0
-                    db 0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0
-                    db 0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0
-                    db 0EH,2,2,2,2,2,2,2,2,2,2,2,2,0EH
-                    db 0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH
-                    db 0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH
-                    db 0EH,0EH,0EH,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0EH,0EH,0EH
-                    db 0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0
-                    db 0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0
-                    db 0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0
-                    db 0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0
-                    db 0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0
-                    db 0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0
-                    db 0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0
+
+    alien_sprite    db 0,0,0,0,0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0,0,0,0,0
+                    db 0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0,0
+                    db 0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0
+                    db 0,0,0,0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH,0,0,0,0,0
+                    db 0,0,0,0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH,0,0,0,0,0
+                    db 0,0,0,0EH,0EH,0EH,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0EH,0EH,0EH,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
     alien_pos dw 125*320 + 300 ; posição inicial (linha 125, x = 300)
     alien_dir db 0  ; direção do alien (0=esquerda, 1=direita)
@@ -84,6 +92,10 @@
     ROW_METEOR  EQU 100
     ROW_ALIEN   EQU 125
     ROW_SHIP    EQU 75
+
+    meteor_pos_ini EQU ROW_METEOR*320 + 300  ; posição inicial do meteoro (linha 100, x = 300)
+    meteor_pos dw meteor_pos_ini ; posi??o inicial (linha 100, x = 300)
+
     ship_pos_ini EQU ROW_SHIP*320 
     ship_pos dw ship_pos_ini ; posição inicial (linha 95, coluna 41)
     ship_speed EQU 4
@@ -401,53 +413,10 @@ PRINT_TITLE_MENU proc
     ret
 PRINT_TITLE_MENU endp
 
-RENDER_SPRITE proc
-    ; joga pra pilha valres dos registradores pra n?o perder
-    push bx
-    push cx
-    push dx
-    push di
-    push es
-    push ds
-    push ax
-
-    ; ds apotando pros dados onde a sprite t?
-    mov ax, @data
-    mov ds, ax
-
-    ; garante que continua no modo 13h
-    mov ax, 0A000h
-    mov es, ax
-
-    ; pega da pilha o ax (posi??o da tela)
-    ; joga pra di do movsb
-    pop ax
-    mov di, ax
-    mov dx, 14 ; 14 linhas pro loop
-    push ax
-
-DRAW_LINE:
-    mov cx, 14 ; 14 colunas
-    rep movsb
-    add di, 320 - 14 ; avan?a pro come?o da prox linha
-    dec dx
-    jnz DRAW_LINE
-
-    ; devolve os valores empilhados no comeco
-    pop ax
-    pop ds  
-    pop es
-    pop di
-    pop dx
-    pop cx
-    pop bx
-ret
-RENDER_SPRITE endp
-
 ; Renderiza sprite da nave
 ; AX = posição na tela
 ; SI = offset do sprite
-RENDER_SHIP_SPRITE proc
+RENDER_SPRITE proc
     push bx
     push cx
     push dx
@@ -482,7 +451,7 @@ DRAW_SHIP_LINE:
     pop cx
     pop bx
     ret
-RENDER_SHIP_SPRITE endp
+RENDER_SPRITE endp
 
 ; usando o valor aleatorio gerado em N_ALE
 RANDOM_UINT16 proc
@@ -586,14 +555,15 @@ CLEAR_SHIP_LINE:
     ret
 CLEAR_SHIP_SPRITE endp
 
+
 ; MOVE_WRAP_LEFT_AND_DRAW
 ; Entradas:
 ;   BX = &pos_var           (ex.: OFFSET meteor_pos)
-;   SI = offset sprite      (ex.: OFFSET meteor_sprite)
-;   AX = L (left bound)     (ex.: METEOR_L)
-;   DX = R (right bound)    (ex.: METEOR_R)
+;   SI = offset sprite      (ex.: OFFSET meteor_sprite)  
+;   AX = pos_inicial        (ex.: meteor_pos_ini)
+;   DX = limite_esquerdo    (ex.: 4)
 ; Efeito:
-;   - limpa, move 1 px p/ esquerda (wrap p/ direita se necess?rio), redesenha
+;   - limpa, move 1 px p/ esquerda (wrap p/ direita se necessário), redesenha
 MOVE_WRAP_LEFT_AND_DRAW proc
     push ax
     push bx
@@ -603,50 +573,47 @@ MOVE_WRAP_LEFT_AND_DRAW proc
     push di
     push bp
 
-;     mov si, offset ship_pos
-;     mov di, [si]
-;     ; Verifica limites: x = ship_pos % 320
-;     mov ax, [ship_pos]
-;     xor dx, dx
-;     mov cx, 320
-;     div cx                       ; DX = x
-;     ; se x >= (320-SPR_W), não anda para a direita
-;     mov bx, 320 - SPR_W         ; limite direito considerando largura da nave
-;     cmp dx, bx
-;     jb MOVE_RIGHT_MENU
-;     ; wrap para a esquerda
-;     mov di, ship_pos
-;     call CLEAR_SPRITE
-;     mov ship_pos, ship_pos_ini            ; AX = L
-
-; MOVE_RIGHT_MENU:
-;     call MOVE_RIGHT_PROC
-
-; DRAW_RIGHT:
+    mov bp, ax              ; BP = posição inicial (para wrap)
+    mov di, dx              ; DI = limite esquerdo
     
-;     call RENDER_SHIP
 
 
-    mov bp, ax              ; BP = L
-    mov di, [bx]            ; DI = pos atual
-    mov ax, di
+    ; Verifica limites: x = pos % 320
+    mov ax, [bx]
+    xor dx, dx
+    mov cx, 320
+    div cx                  ; DX = x (coordenada X)
+    
+    cmp dx, di              ; compara com limite esquerdo
+    ja  MOVE_LEFT_MENU
+    
+    ; wrap para a direita
+    mov di, [bx]
     call CLEAR_SPRITE
 
-    mov ax, [bx]            ; AX = pos 
-    cmp ax, bp              ; pos <= L ?
-    ja  MOVE_LEFT_MENU
-    ; wrap p/ direita
-    mov ax, dx              ; AX = R
+    mov ax, bp              ; AX = posição inicial
     mov [bx], ax
-    jmp DRAW
+
+    ; jmp DRAW_SPRITE
 
 MOVE_LEFT_MENU:
-    dec ax
-    mov [bx], ax
+    ; move para a esquerda usando MOVE_LEFT_PROC
+    ; configura parâmetros para MOVE_LEFT_PROC
+    push bx                     ; salva BX original
+    push di                     ; salva DI original
+    
+    ; BX = ponteiro para posição (já está correto)
+    mov cx, 1                   ; velocidade = 1 pixel
+    mov dx, di                  ; limite esquerdo
+    call MOVE_LEFT_PROC
+    
+    pop di                      ; restaura DI
+    pop bx                      ; restaura BX
 
-DRAW:
-    mov si, si              ; (SI j? ? o sprite)
-    ; AX j? tem pos atualizada
+DRAW_SPRITE:
+    ; Renderiza sprite na nova posição
+    mov ax, [bx]            ; AX = nova posição
+    ; SI já contém o offset do sprite
     call RENDER_SPRITE
 
     pop bp
@@ -768,9 +735,10 @@ MOVE_WRAP_RIGHT_AND_DRAW endp
 MOVE_MENU PROC
     mov bx, OFFSET meteor_pos
     mov si, OFFSET meteor_sprite
-    mov ax, METEOR_L
-    mov dx, METEOR_R
+    mov ax, meteor_pos_ini      ; posição inicial para wrap
+    mov dx, 4                   ; limite esquerdo
     call MOVE_WRAP_LEFT_AND_DRAW
+
     mov bx, OFFSET alien_pos
     mov bp, OFFSET alien_dir
     mov si, OFFSET alien_sprite
@@ -1036,7 +1004,7 @@ RENDER_SINGLE_LIFE:
     push ax
     push si
     mov si, offset ship_sprite  ; Resetar SI para o início do sprite
-    call RENDER_SHIP_SPRITE
+    call RENDER_SPRITE
     pop si
     pop ax
     add ax, 25  ; próxima vida (19 pixels + 6 de espaço)
@@ -1183,6 +1151,9 @@ MOVE_DOWN:
     call MOVE_DOWN_PROC
     jmp END_CONTROLS
 MOVE_LEFT:
+    mov bx, OFFSET ship_pos     ; ponteiro para posição da nave
+    mov cx, ship_speed          ; velocidade da nave
+    mov dx, 4                   ; limite esquerdo
     call MOVE_LEFT_PROC
     jmp END_CONTROLS
 
@@ -1246,7 +1217,7 @@ RENDER_SHIP proc
     
     mov ax, ship_pos
     mov si, offset ship_sprite
-    call RENDER_SHIP_SPRITE
+    call RENDER_SPRITE
 
     pop ax
     pop bx
@@ -1263,6 +1234,32 @@ RESET_SHIP proc
     
     pop bx
     pop si
+    ret
+endp
+
+RENDER_ALIEN proc
+    ; AX = posição na tela
+    push di
+    push bx
+
+    mov si, offset alien_sprite
+    call RENDER_SPRITE
+
+    pop bx
+    pop di
+    ret
+endp
+
+RENDER_METEOR proc
+    ; AX = posição na tela
+    push di
+    push bx
+
+    mov si, offset meteor_sprite
+    call RENDER_SPRITE
+
+    pop bx
+    pop di
     ret
 endp
 
@@ -1367,29 +1364,38 @@ END_DOWN:
 endp
 
 MOVE_LEFT_PROC proc
+    ; Entradas:
+    ;   BX = ponteiro para posição (ex.: OFFSET ship_pos)
+    ;   CX = velocidade (ex.: ship_speed)
+    ;   DX = limite esquerdo (ex.: 4)
     push di
     push si
     push ax
     push dx
     push cx
-    
+    push bp
 
-    ; Verifica limites: x = ship_pos % 320
-    mov ax, [ship_pos]
+    mov bp, cx              ; BP = velocidade
+    mov di, dx              ; DI = limite esquerdo
+
+    ; Verifica limites: x = pos % 320
+    mov ax, [bx]            ; AX = posição atual
     xor dx, dx
     mov cx, 320
-    div cx
-    mov bx, 4              
-    cmp dx, bx
+    div cx                  ; DX = coordenada X
+    
+    cmp dx, di              ; compara com limite esquerdo
     jbe END_LEFT
     
-    ; Move a nave
-    mov ah, 1                   ; direção negativa (esquerda)
-    mov bx, ship_speed
-    mov al, 0                   ; eixo X
+    ; Move para a esquerda
+    mov si, bx              ; SI = ponteiro para posição
+    mov ah, 1               ; direção negativa (esquerda)
+    mov bx, bp              ; BX = velocidade
+    mov al, 0               ; eixo X
     call MOVE_SPRITE
 
 END_LEFT:
+    pop bp
     pop cx
     pop dx
     pop ax
