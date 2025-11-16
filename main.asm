@@ -18,8 +18,6 @@
               db 14 dup(" "),192,196,196,196,196,196,196,196,196,196,217,13,10
 
     btn_sair_length equ $-btn_sair
-    CR EQU 13
-    LF EQU 10
     string  db 2 dup(" "),"                                    ",13,10
             db 2 dup(" "),"  ___                    _    _     ",13,10
             db 2 dup(" ")," / __| __ _ _ __ _ _ __ | |__| |___ ",13,10
@@ -109,15 +107,6 @@
 
     SPR_W       EQU 22  ; para meteoro e alien
     SPR_H       EQU 18
-    RIGHT_X     EQU (SCREEN_W - SPR_W)   ; ?ltimo X v?lido p/ canto esquerdo do sprite
-
-
-    ; Limites horizontais por objeto (linha fixa)
-    METEOR_L    EQU (ROW_METEOR*SCREEN_W)
-    METEOR_R    EQU (ROW_METEOR*SCREEN_W + RIGHT_X)
-
-    ALIEN_L     EQU (ROW_ALIEN*SCREEN_W)
-    ALIEN_R     EQU (ROW_ALIEN*SCREEN_W + RIGHT_X)
 
     fase1   db 7 dup(" ")," ___                  _ ",13,10
             db 7 dup(" "),"| __|_ _ ___ ___     / |",13,10
@@ -163,7 +152,7 @@
     score_str_len equ $-score_str
     
     ; Terreno da fase 1
-    terrain db 320 dup(0)
+    terrain_fase1 db 320 dup(0)
         db 320 dup(0)
         db 168 dup(0),3 dup (6),149 dup(0)
         db 166 dup(0),6 dup (6),148 dup(0)
@@ -241,6 +230,101 @@
         db 320 dup (0DH)
         db 320 dup (05H)
     
+    ; Terreno da fase 2 - mais desafiador com mais obstáculos
+    terrain_fase2 db 320 dup(0)
+        db 320 dup(0)
+        db 120 dup(0),8 dup (4),192 dup(0)
+        db 115 dup(0),12 dup (4),193 dup(0)
+        db 50 dup(0),6 dup (4),10 dup(0),8 dup (4),90 dup(0),4 dup (4),30 dup(0),8 dup (4),100 dup(0),4 dup (4),24 dup(0)
+        db 45 dup(0),8 dup (4),8 dup(0),12 dup (4),80 dup(0),6 dup (4),25 dup(0),12 dup (4),95 dup(0),6 dup (4),23 dup(0)
+        db 40 dup(0),10 dup (4),15 dup(0),8 dup (4),70 dup(0),8 dup (4),20 dup(0),15 dup (4),85 dup(0),8 dup (4),21 dup(0)
+        db 35 dup(0),12 dup (4),12 dup(0),10 dup (4),60 dup(0),10 dup (4),18 dup(0),18 dup (4),75 dup(0),10 dup (4),20 dup(0)
+        db 30 dup(0),15 dup (4),10 dup(0),12 dup (4),50 dup(0),12 dup (4),15 dup(0),20 dup (4),65 dup(0),12 dup (4),19 dup(0)
+        db 25 dup(0),18 dup (4),8 dup(0),15 dup (4),40 dup(0),15 dup (4),12 dup(0),25 dup (4),55 dup(0),15 dup (4),17 dup(0)
+        db 20 dup(0),20 dup (4),6 dup(0),18 dup (4),30 dup(0),18 dup (4),10 dup(0),30 dup (4),45 dup(0),18 dup (4),15 dup(0)
+        db 15 dup(0),25 dup (4),4 dup(0),20 dup (4),20 dup(0),20 dup (4),8 dup(0),35 dup (4),35 dup(0),20 dup (4),13 dup(0)
+        db 320 dup (4)
+        db 320 dup (4)
+        db 320 dup (4)
+        db 30 dup(4),4 dup(0CH),25 dup(4),3 dup(02H),35 dup(4),5 dup(0CH),30 dup(4),4 dup(02H),32 dup(4),3 dup(0CH),35 dup(4),5 dup(02H),28 dup(4),4 dup(0CH),30 dup(4)
+        db 25 dup(4),7 dup(02H),20 dup(4),9 dup(0CH),25 dup(4),8 dup(02H),22 dup(4),10 dup(0CH),27 dup(4),9 dup(02H),25 dup(4),11 dup(0CH),20 dup(4),10 dup(02H),23 dup(4)
+        db 20 dup(4),10 dup(0CH),18 dup(4),12 dup(02H),20 dup(4),11 dup(0CH),19 dup(4),13 dup(02H),22 dup(4),12 dup(0CH),21 dup(4),14 dup(02H),18 dup(4),13 dup(0CH),19 dup(4)
+        db 15 dup(4),15 dup(02H),13 dup(4),18 dup(0CH),15 dup(4),16 dup(02H),14 dup(4),19 dup(0CH),17 dup(4),17 dup(02H),16 dup(4),20 dup(0CH),13 dup(4),18 dup(02H),15 dup(4)
+        db 10 dup(4),20 dup(0CH),8 dup(4),25 dup(02H),10 dup(4),21 dup(0CH),9 dup(4),26 dup(02H),12 dup(4),22 dup(0CH),11 dup(4),27 dup(02H),8 dup(4),23 dup(0CH),10 dup(4)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+        db 320 dup (02H)
+        db 320 dup (0CH)
+
+    ; Terreno da fase 3 - extremamente desafiador
+    terrain_fase3 db 320 dup(0)
+        db 320 dup(0)
+        db 80 dup(0),12 dup (1),228 dup(0)
+        db 75 dup(0),18 dup (1),227 dup(0)
+        db 60 dup(0),8 dup (1),15 dup(0),10 dup (1),120 dup(0),6 dup (1),25 dup(0),12 dup (1),64 dup(0)
+        db 55 dup(0),10 dup (1),12 dup(0),15 dup (1),110 dup(0),8 dup (1),20 dup(0),18 dup (1),60 dup(0)
+        db 50 dup(0),12 dup (1),10 dup(0),20 dup (1),100 dup(0),10 dup (1),18 dup(0),22 dup (1),58 dup(0)
+        db 45 dup(0),15 dup (1),8 dup(0),25 dup (1),90 dup(0),12 dup (1),15 dup(0),28 dup (1),55 dup(0)
+        db 40 dup(0),18 dup (1),6 dup(0),30 dup (1),80 dup(0),15 dup (1),12 dup(0),35 dup (1),50 dup(0)
+        db 35 dup(0),20 dup (1),4 dup(0),35 dup (1),70 dup(0),18 dup (1),10 dup(0),40 dup (1),48 dup(0)
+        db 30 dup(0),25 dup (1),2 dup(0),40 dup (1),60 dup(0),20 dup (1),8 dup(0),45 dup (1),45 dup(0)
+        db 25 dup(0),30 dup (1),45 dup (1),50 dup(0),25 dup (1),5 dup(0),50 dup (1),40 dup(0)
+        db 320 dup (1)
+        db 320 dup (1)
+        db 320 dup (1)
+        db 35 dup(1),5 dup(0FH),30 dup(1),4 dup(08H),40 dup(1),6 dup(0FH),35 dup(1),5 dup(08H),37 dup(1),4 dup(0FH),40 dup(1),6 dup(08H),33 dup(1)
+        db 30 dup(1),8 dup(08H),25 dup(1),10 dup(0FH),30 dup(1),9 dup(08H),27 dup(1),11 dup(0FH),32 dup(1),10 dup(08H),30 dup(1),12 dup(0FH),25 dup(1)
+        db 25 dup(1),12 dup(0FH),20 dup(1),15 dup(08H),25 dup(1),13 dup(0FH),22 dup(1),16 dup(08H),27 dup(1),14 dup(0FH),26 dup(1),17 dup(08H),20 dup(1)
+        db 20 dup(1),18 dup(08H),15 dup(1),22 dup(0FH),20 dup(1),19 dup(08H),17 dup(1),23 dup(0FH),22 dup(1),20 dup(08H),21 dup(1),24 dup(0FH),15 dup(1)
+        db 15 dup(1),25 dup(0FH),10 dup(1),30 dup(08H),15 dup(1),26 dup(0FH),12 dup(1),31 dup(08H),17 dup(1),27 dup(0FH),14 dup(1),32 dup(08H),10 dup(1)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        db 320 dup (08H)
+        db 320 dup (0FH)
+        
+    ; Vetor de terrenos para cada fase
+    terrain_vec dw offset terrain_fase1, offset terrain_fase2, offset terrain_fase3
+    
     terrain_pos dw 320 * 180  ; Linha 130 (1/3 superior da tela)
 
     
@@ -303,7 +387,6 @@ SELECT_OPTION:
     
     ; Limpa completamente a tela antes de iniciar o jogo
     call CLEAR_SCREEN
-    call CLEAR_SCREEN  ; Limpa duas vezes para garantir
 
     call RESET_SHIP
     
@@ -528,34 +611,6 @@ CLEAR_LINE:
     pop ax
     ret
 CLEAR_SPRITE endp
-
-; DI = posição linear do canto esquerdo da nave (29x13)
-CLEAR_SHIP_SPRITE proc
-    push ax
-    push cx
-    push di
-    push es
-    
-    mov ax, 0A000h
-    mov es, ax
-    mov cx, SPR_H
-
-CLEAR_SHIP_LINE:
-    push cx
-    mov cx, SPR_W
-    xor al, al
-    rep stosb
-    add di, SCREEN_W - SPR_W
-    pop cx
-    loop CLEAR_SHIP_LINE
-
-    pop es
-    pop di
-    pop cx
-    pop ax
-    ret
-CLEAR_SHIP_SPRITE endp
-
 
 ; MOVE_WRAP_LEFT_AND_DRAW
 ; Entradas:
@@ -868,17 +923,8 @@ RENDER_FASE proc
 
     cmp al, 4
     jne SUM_POINTS
-    ;call SHOW_YOU_WIN
-
 SUM_POINTS:
     dec al ; number vector index
-
-    ;mov bx, 1000
-    ;mul bx
-    ;xor bx, bx
-    ;mov bl, allies_count
-    ;mul bx
-    ;add score, ax
 
     xor ax, ax
     mov al, fase
@@ -1077,10 +1123,20 @@ UPDATE_TIME proc
 
     mov ah, fase
     inc ah
+    cmp ah, 4                  ; Verifica se passou da fase 3
+    jae FINISH_GAME           ; Se sim, finaliza o jogo com vitória
     mov fase, ah
+    
+    ; Reseta o tempo para a nova fase
+    mov time, SECONDS_START
     
     call RENDER_FASE
     
+    jmp END_TIME
+
+FINISH_GAME:
+    ; Player completou todas as fases
+    call END_GAME
     jmp END_TIME
 
 SAVE_TIME:
@@ -1315,7 +1371,7 @@ RESET_GAME proc
     ret
 endp
 
-; Renderiza o terreno (montanhoso para fase 1)
+; Renderiza o terreno baseado na fase atual
 RENDER_TERRAIN proc
     push bx
     push cx
@@ -1331,7 +1387,15 @@ RENDER_TERRAIN proc
     mov ax, 0A000h
     mov es, ax
 
-    mov si, offset terrain
+    ; Seleciona o terreno correto baseado na fase
+    xor ax, ax
+    mov al, fase
+    dec al                      ; fase 1->0, fase 2->1, fase 3->2
+    shl al, 1                   ; multiplica por 2 (offsets são words)
+    mov bx, offset terrain_vec
+    add bx, ax
+    mov si, [bx]               ; SI = offset do terreno da fase atual
+
     mov di, terrain_pos
     dec terrain_pos
     cmp terrain_pos, 320*130 - 1
