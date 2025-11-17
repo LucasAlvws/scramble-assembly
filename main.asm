@@ -88,6 +88,15 @@
                 db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                 db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                 db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    ; Sprite do tiro (8x6 pixels) - horizontal
+    shot_sprite db 0,0,0,0,0,0
+                db 0,0,0,0,0,0
+                db 0,0,15,15,0,0
+                db 0,0,15,15,0,0
+                db 0,0,0,0,0,0
+                db 0,0,0,0,0,0
+
     ROW_METEOR  EQU 100
     ROW_ALIEN   EQU 125
     ROW_SHIP    EQU 75
@@ -98,6 +107,11 @@
     ship_pos_ini EQU ROW_SHIP*320 
     ship_pos dw ship_pos_ini ; posição inicial (linha 95, coluna 41)
     ship_speed EQU 4
+    
+    ; Sistema de tiro (3 tiros simultâneos)
+    shot_count db 3
+    shot_pos dw 0, 0, 0       ; Posições dos 3 tiros
+    shot_active db 0, 0, 0    ; Status dos 3 tiros (0=inativo, 1=ativo)
 
     LIFES_START EQU 3
     lives db LIFES_START  ; número de vidas
@@ -133,7 +147,7 @@
     
     fase_vec dw offset fase1, offset fase2, offset fase3
     
-    SECONDS_START  EQU 60
+    SECONDS_START  EQU 20
 
     time db SECONDS_START
     timeout db 0
@@ -395,6 +409,7 @@ SELECT_OPTION:
     call RENDER_STATUS   ; Renderiza score, vidas e tempo
     call UPDATE_TIME
     call UPDATE_SHIP
+    call UPDATE_SHOT     ; Atualiza os tiros
     
     jmp GAME_LOOP
 
@@ -1220,8 +1235,8 @@ HANDLE_CONTROLS proc
     cmp ah, 4DH
     je MOVE_RIGHT
 
-    ;cmp ah, 39H
-    ;je FIRE
+    cmp ah, 39H
+    je FIRE
     
     cmp al, 'q'
     jne END_CONTROLS
@@ -1231,7 +1246,7 @@ HANDLE_CONTROLS proc
     call END_GAME
 
 FIRE:
-    ;call SHOOT
+    call SHOOT
     jmp END_CONTROLS
 
 MOVE_UP:
@@ -1359,6 +1374,8 @@ endp
 ; Reseta o jogo (score, vidas, fase)
 RESET_GAME proc
     push ax
+    push cx
+    push si
     
     mov score, 0
     mov lives, LIFES_START
@@ -1367,9 +1384,214 @@ RESET_GAME proc
     mov timeout, 0
     mov terrain_pos, 320 * 130
     
+    ; Reset all shots
+    mov byte ptr [shot_active], 0
+    mov byte ptr [shot_active + 1], 0
+    mov byte ptr [shot_active + 2], 0
+    
+    pop si
+    pop cx
     pop ax
     ret
 endp
+
+; Sistema de Tiro Múltiplo (3 tiros)
+SHOOT proc
+    push ax
+    push bx
+    push cx
+    push si
+
+    ; Procura um slot livre para o tiro
+    xor cx, cx
+    mov cl, shot_count
+    mov si, offset shot_active
+
+FIND_FREE_SHOT:
+    cmp byte ptr [si], 0    ; Verifica se este slot está livre
+    je FOUND_FREE_SHOT
+    inc si                  ; Próximo slot
+    loop FIND_FREE_SHOT
+    jmp END_SHOOT          ; Todos os slots ocupados
+
+FOUND_FREE_SHOT:
+    ; Calcula o índice do slot livre
+    mov ax, si
+    sub ax, offset shot_active  ; AX = índice do slot (0 ou 1)
+    
+    ; Ativa o tiro na posição da nave
+    mov bx, ship_pos
+    add bx, 29              ; Posição no nariz da nave (largura do sprite = 29)
+    add bx, 320 * 6         ; Ajusta para o meio vertical da nave (altura/2 ≈ 6)
+    
+    ; Armazena a posição do tiro
+    shl ax, 1               ; Multiplica por 2 (words são 2 bytes)
+    mov si, offset shot_pos
+    add si, ax
+    mov [si], bx
+    
+    ; Marca o tiro como ativo
+    shr ax, 1               ; Volta para índice original
+    mov si, offset shot_active
+    add si, ax
+    mov byte ptr [si], 1
+
+END_SHOOT:
+    pop si
+    pop cx
+    pop bx
+    pop ax
+    ret
+SHOOT endp
+
+
+UPDATE_SHOT proc
+    push di
+    push si
+    push ax
+    push bx
+    push cx
+    push dx
+
+    ; Loop através de todos os tiros
+    xor cx, cx
+    mov cl, shot_count
+
+UPDATE_SHOT_LOOP:
+    push cx                 ; Salva contador
+    dec cx                  ; Converte para índice base 0
+    
+    ; Verifica se este tiro está ativo
+    mov si, offset shot_active
+    add si, cx
+    cmp byte ptr [si], 1
+    jne NEXT_SHOT
+    
+    ; Obtém a posição do tiro
+    push cx                 ; Salva índice
+    shl cx, 1               ; Multiplica por 2 (words)
+    mov si, offset shot_pos
+    add si, cx
+    mov di, [si]            ; DI = posição atual do tiro
+    pop cx                  ; Restaura índice
+
+    ; Limpa a posição anterior do tiro
+    call CLEAR_SHOT_SPRITE
+
+    ; Calcula posição X atual
+    mov ax, di
+    mov bx, 320
+    xor dx, dx
+    div bx
+    ; DX = posição X na linha
+    
+    ; Se posição X >= 310, desativa o tiro (mais conservador)
+    cmp dx, 310
+    jae DEACTIVATE_THIS_SHOT
+    
+    ; Move o tiro para direita (2 pixels)
+    add di, 2
+    
+    ; Atualiza posição
+    push cx
+    shl cx, 1
+    mov si, offset shot_pos
+    add si, cx
+    mov [si], di
+    pop cx
+
+    ; Renderiza o tiro na nova posição
+    mov ax, di
+    mov si, offset shot_sprite
+    call RENDER_SHOT_SPRITE
+    jmp NEXT_SHOT
+
+DEACTIVATE_THIS_SHOT:
+    ; Desativa este tiro específico
+    mov si, offset shot_active
+    add si, cx
+    mov byte ptr [si], 0
+
+NEXT_SHOT:
+    pop cx                  ; Restaura contador
+    loop UPDATE_SHOT_LOOP
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    pop si
+    pop di
+    ret
+UPDATE_SHOT endp
+
+; Renderiza sprite da nave
+; AX = posição na tela
+; SI = offset do sprite
+RENDER_SHOT_SPRITE proc
+    push bx
+    push cx
+    push dx
+    push di
+    push es
+    push ds
+    push ax
+
+    mov ax, @data
+    mov ds, ax
+
+    mov ax, 0A000h
+    mov es, ax
+
+    pop ax
+    mov di, ax
+    mov dx, 6               ; Sprite do tiro tem 6 linhas de altura
+    push ax
+
+DRAW_SHOT_LINE:
+    mov cx, 6              ; Cada linha do sprite tem 22 bytes
+    rep movsb
+    add di, SCREEN_W - 6   ; Ajusta para próxima linha (320 - 22)
+    dec dx
+    jnz DRAW_SHOT_LINE
+
+    pop ax
+    pop ds  
+    pop es
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    ret
+RENDER_SHOT_SPRITE endp
+
+; Limpa sprite do tiro na posição DI
+CLEAR_SHOT_SPRITE proc
+    push ax
+    push cx
+    push di
+    push es
+    
+    mov ax, 0A000h
+    mov es, ax
+    mov cx, 6               ; Altura do sprite do tiro
+
+CLEAR_SHOT_LINE:
+    push cx
+    mov cx, 6              ; Largura do sprite do tiro
+    xor al, al              ; cor 0 (preto)
+    rep stosb
+    add di, SCREEN_W - 6   ; Próxima linha
+    pop cx
+    loop CLEAR_SHOT_LINE
+
+    pop es
+    pop di
+    pop cx
+    pop ax
+    ret
+CLEAR_SHOT_SPRITE endp
+
 
 ; Renderiza o terreno baseado na fase atual
 RENDER_TERRAIN proc
