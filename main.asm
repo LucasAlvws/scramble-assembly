@@ -147,7 +147,39 @@
     
     fase_vec dw offset fase1, offset fase2, offset fase3
     
-    SECONDS_START  EQU 20
+    ; ASCII art para Game Over
+    game_over_msg   db 5 dup(" "),"                          ",13,10
+                    db 5 dup(" "),"   ___   _   __  __ ___  ",13,10
+                    db 5 dup(" "),"  / __| /_\ |  \/  | __| ",13,10
+                    db 5 dup(" ")," | (_ |/ _ \| |\/| | _|  ",13,10
+                    db 5 dup(" "),"  \___/_/ \_\_|_ |_|___| ",13,10
+                    db 5 dup(" "),"  / _ \ \ / / __| _ \    ",13,10
+                    db 5 dup(" ")," | (_) \ V /| _||   /    ",13,10
+                    db 5 dup(" "),"  \___/ \_/ |___|_|_\    ",13,10
+                    db 5 dup(" "),"                          ",13,10
+
+    game_over_msg_length equ $-game_over_msg
+    
+    ; ASCII art para Vencedor
+    vencedor_msg    db 2 dup(" "),"                                    ",13,10
+                    db 2 dup(" ")," __   __                  _         ",13,10
+                    db 2 dup(" ")," \ \ / /__ _ _  __ ___ __| |___ _ _ ",13,10
+                    db 2 dup(" "),"  \ V / -_) ' \/ _/ -_) _` / _ \ '_|",13,10
+                    db 2 dup(" "),"   \_/\___|_||_\__\___\__,_\___/_|  ",13,10
+                    db 2 dup(" "),"                                    ",13,10
+
+    vencedor_msg_length equ $-vencedor_msg
+
+    
+    ; Mensagem para pressionar tecla
+    press_key_msg db "Pressione qualquer tecla",13,10,0
+    press_key_msg_length equ $-press_key_msg
+    
+    ; Mensagem de score final
+    final_score_msg db "SCORE FINAL: ",0
+    final_score_msg_length equ $-final_score_msg
+    
+    SECONDS_START  EQU 5
 
     time db SECONDS_START
     timeout db 0
@@ -359,11 +391,11 @@ MAIN:
     mov al, 13h
     int 10h
 
+LOOP_MENU:
     ; Exibe titulo e botoes do menu
     call PRINT_TITLE_MENU
     call PRINT_BUTTONS
     
-LOOP_MENU:
     call MOVE_MENU
     ; Recebe entrada do usu??rio
     mov ah, 1H
@@ -411,7 +443,22 @@ SELECT_OPTION:
     call UPDATE_SHIP
     call UPDATE_SHOT     ; Atualiza os tiros
     
+    ; Verifica condições de fim de jogo
+    call CHECK_GAME_END
+    cmp al, 1            ; Game Over?
+    je GAME_OVER_END
+    cmp al, 2            ; Vitória?
+    je VICTORY_END
+    
     jmp GAME_LOOP
+    
+GAME_OVER_END:
+    call SHOW_GAME_OVER
+    jmp LOOP_MENU        ; Volta ao menu principal
+    
+VICTORY_END:
+    call SHOW_VICTORY
+    jmp LOOP_MENU        ; Volta ao menu principal
 
 FINISH:
     CALL END_GAME
@@ -930,7 +977,7 @@ RENDER_FASE proc
 
     call CLEAR_SCREEN
 
-    mov ship_pos, 0
+    mov ship_pos, ship_pos_ini
     
     ; Print Sector
     xor ax, ax
@@ -1138,9 +1185,10 @@ UPDATE_TIME proc
 
     mov ah, fase
     inc ah
-    cmp ah, 4                  ; Verifica se passou da fase 3
-    jae FINISH_GAME           ; Se sim, finaliza o jogo com vitória
-    mov fase, ah
+    mov fase, ah              ; Atualiza a fase primeiro
+    
+    cmp ah, 4                 ; Verifica se passou da fase 3
+    jae FINISH_GAME          ; Se sim, marca como completado
     
     ; Reseta o tempo para a nova fase
     mov time, SECONDS_START
@@ -1150,8 +1198,8 @@ UPDATE_TIME proc
     jmp END_TIME
 
 FINISH_GAME:
-    ; Player completou todas as fases
-    call END_GAME
+    ; Player completou todas as fases - fase agora é 4
+    ; A verificação de vitória será feita no CHECK_GAME_END
     jmp END_TIME
 
 SAVE_TIME:
@@ -1637,6 +1685,160 @@ SKIP_POS_UPDATE:
     pop bx
     ret
 endp
+
+; Exibe tela de Game Over (vidas = 0)
+SHOW_GAME_OVER proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    
+    call CLEAR_SCREEN
+    
+    ; Configura ES para apontar para o segmento de dados
+    mov ax, ds 
+    mov es, ax
+    
+    ; Exibe mensagem Game Over em vermelho
+    mov bp, offset game_over_msg
+    mov cx, game_over_msg_length ; tamanho
+    mov bl, 0Ch     ; cor vermelha
+    mov dx, 320*3 ; linha / coluna
+    call PRINT_STRING
+    
+    ; ; Move cursor para baixo
+    ; mov ah, 02h
+    ; mov bh, 0
+    ; mov dh, 15      ; linha 15
+    ; mov dl, 5       ; coluna 5
+    ; int 10h
+    
+    ; Exibe mensagem para pressionar tecla em branco
+    ; mov bp, offset press_key_msg
+    ; mov cx, 999     ; tamanho grande
+    ; mov bl, 0Fh     ; cor branca
+    ; call PRINT_STRING
+    
+    mov bp, offset press_key_msg
+    mov cx, press_key_msg_length ; tamanho correto
+    mov bl, 0Fh     ; cor branca
+    mov dx, 320*18 ; linha 18, coluna 8 (centralizado)
+    call PRINT_STRING
+
+    ; Aguarda tecla
+    call WAIT_KEY
+    call CLEAR_SCREEN
+    
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+SHOW_GAME_OVER endp
+
+; Exibe tela de Vitória (completou todas as fases)
+SHOW_VICTORY proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    
+    call CLEAR_SCREEN
+    
+    ; Configura ES para apontar para o segmento de dados
+    mov ax, ds 
+    mov es, ax
+    
+    ; Exibe mensagem Vencedor em verde
+    mov bp, offset vencedor_msg
+    mov cx, vencedor_msg_length ; tamanho correto
+    mov bl, 0Ah     ; cor verde
+    mov dx, 320*5 ; linha 5
+    call PRINT_STRING
+    
+    ; Exibe score final em branco
+    mov bp, offset final_score_msg
+    mov cx, final_score_msg_length ; tamanho correto
+    mov bl, 0Fh     ; cor branca
+    mov dx, 320*12 + 10 ; linha 12, coluna 15 (centralizado)
+    call PRINT_STRING
+    
+    ; Converte e exibe o score
+    mov ax, score
+    mov si, offset score_buffer + 4  ; final do buffer
+    mov cx, 5                        ; 5 dígitos
+    call CONVERT_UINT16
+    
+    mov bp, offset score_buffer
+    mov cx, 5       ; 5 dígitos
+    mov bl, 0Fh     ; cor branca
+    mov dx, 320*12 + 23 ; linha 12, coluna 28 (logo após "SCORE FINAL: ")
+    call PRINT_STRING
+    
+    ; Exibe mensagem para pressionar tecla
+    mov bp, offset press_key_msg
+    mov cx, press_key_msg_length ; tamanho correto
+    mov bl, 0Fh     ; cor branca
+    mov dx, 320*18 ; linha 18, coluna 8 (centralizado)
+    call PRINT_STRING
+    ; Aguarda tecla
+    call WAIT_KEY
+    call CLEAR_SCREEN
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+SHOW_VICTORY endp
+
+; Aguarda qualquer tecla ser pressionada
+WAIT_KEY proc
+    push ax
+    
+WAIT_KEY_LOOP:
+    mov ah, 01h     ; verifica se há tecla disponível
+    int 16h
+    jz WAIT_KEY_LOOP  ; se não há tecla, continua aguardando
+    
+    mov ah, 00h     ; lê a tecla
+    int 16h
+    
+    pop ax
+    ret
+WAIT_KEY endp
+
+; Verifica condições de fim de jogo
+; Retorna: AL = 0 (continua), 1 (game over), 2 (vitória)
+CHECK_GAME_END proc
+    push bx
+    
+    ; Verifica se perdeu todas as vidas
+    cmp lives, 0
+    je GAME_OVER_CONDITION
+    
+    ; Verifica se completou todas as fases (fase > 3)
+    cmp fase, 3
+    ja VICTORY_CONDITION
+    
+    ; Jogo continua
+    mov al, 0
+    jmp END_CHECK
+    
+GAME_OVER_CONDITION:
+    mov al, 1
+    jmp END_CHECK
+    
+VICTORY_CONDITION:
+    mov al, 2
+    
+END_CHECK:
+    pop bx
+    ret
+CHECK_GAME_END endp
 
 MOVE_UP_PROC proc
     push di
