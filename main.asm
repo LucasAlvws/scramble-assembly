@@ -26,68 +26,74 @@
 
 
     string_length equ $-string
-    meteor_sprite   db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,1,1,4,4,4,1,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,1,4,4,4,4,4,4,1,0,1,1,0,0,0,0,0
-                    db 0,0,0,0,0,1,4,4,4,5,5,4,4,4,1,0,0,0,0,0,0,0
-                    db 0,0,0,0,1,4,4,5,5,5,5,5,4,4,1,0,0,0,0,0,0,0
-                    db 0,0,0,0,1,4,4,5,5,5,5,5,5,4,1,5,5,0,0,0,0,0
-                    db 0,0,0,0,1,4,4,4,5,5,5,5,4,4,1,4,5,0,0,0,0,0
-                    db 0,0,0,0,0,1,4,4,4,4,5,4,4,1,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,1,4,4,4,4,4,4,4,1,0,1,5,0,0,0,0,0
-                    db 0,0,0,0,0,0,1,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,1,4,4,4,1,0,4,4,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    meteor_sprite   db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,1,1,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,1,4,4,4,4,4,4,4,4,1,0,1,1,0,0,0,0,0,0
+                    db 0,0,0,0,0,1,4,4,4,4,4,4,4,4,1,0,1,1,0,0,0,0,0,0
+                    db 0,0,0,0,1,4,4,4,5,5,5,5,4,4,4,1,0,0,0,0,0,0,0,0
+                    db 0,0,0,1,4,4,5,5,5,5,5,5,5,4,4,1,0,0,0,0,0,0,0,0
+                    db 0,0,0,1,4,4,5,5,5,5,5,5,5,5,4,1,5,5,0,0,0,0,0,0
+                    db 0,0,0,1,4,4,4,5,5,5,5,5,5,4,4,1,4,5,0,0,0,0,0,0
+                    db 0,0,0,1,4,4,4,5,5,5,5,5,5,4,4,1,4,5,0,0,0,0,0,0
+                    db 0,0,0,1,4,4,4,5,5,5,5,5,5,4,4,1,4,5,0,0,0,0,0,0
+                    db 0,0,0,0,1,4,4,4,4,5,5,5,4,4,1,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,1,4,4,4,4,4,4,4,4,4,1,0,1,5,0,0,0,0,0,0
+                    db 0,0,0,0,0,1,4,4,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,1,4,4,4,4,4,1,0,4,4,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,1,4,4,4,4,4,1,0,4,4,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 
-    alien_sprite    db 0,0,0,0,0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0,0,0,0,0
-                    db 0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0,0
-                    db 0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0,0
-                    db 0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0
-                    db 0,0,0,0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH,0,0,0,0,0
-                    db 0,0,0,0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH,0,0,0,0,0
-                    db 0,0,0,0EH,0EH,0EH,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0EH,0EH,0EH,0,0,0,0,0
-                    db 0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
-                    db 0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
-                    db 0,0,0,0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0,0,0,0,0,0
-                    db 0,0,0,0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0,0,0,0,0,0
-                    db 0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
-                    db 0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    alien_sprite    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0EH,0AH,5,5,0AH,2,0EH,0AH,5,5,0AH,0EH,0EH,0,0,0,0,0
+                    db 0,0,0,0,0,0EH,0EH,0EH,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0EH,0EH,0EH,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0EH,0AH,2,5,5,0AH,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0EH,0AH,2,5,5,2,5,5,2,0AH,0EH,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
     alien_pos dw 125*320 + 300 ; posição inicial (linha 125, x = 300)
     alien_dir db 0  ; direção do alien (0=esquerda, 1=direita)
     
     ; Sprite da nave principal (29x13 pixels) - baseado no exemplo
-    ship_sprite db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,1,15,15,15,15,15,15,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15,0,0,0,0
-                db 0,0,0,0,0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15,0,0,0,0
-                db 0,0,0,0,0,1,15,15,15,15,15,15,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    ship_sprite db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,1,15,15,15,15,15,15,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15,0,0,0,0,0
+                db 0,0,0,0,0,0,1,09H,09H,09H,09H,09H,09H,15,15,15,15,15,15,0,0,0,0,0
+                db 0,0,0,0,0,0,1,15,15,15,15,15,15,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,1,15,15,15,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,1,15,15,0AH,0AH,0AH,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
     ; Sprite do tiro (8x6 pixels) - horizontal
     shot_sprite db 0,0,0,0,0,0
@@ -106,12 +112,20 @@
 
     ship_pos_ini EQU ROW_SHIP*320 
     ship_pos dw ship_pos_ini ; posição inicial (linha 95, coluna 41)
-    ship_speed EQU 4
+    ship_speed EQU 5
     
     ; Sistema de tiro (3 tiros simultâneos)
     shot_count db 3
     shot_pos dw 0, 0, 0       ; Posições dos 3 tiros
     shot_active db 0, 0, 0    ; Status dos 3 tiros (0=inativo, 1=ativo)
+
+    ; Sistema de aliens (padrão K-Star Patrol)
+    alien_count db 4
+    alien_array_pos dw 4 dup(0)
+    alien_array_active db 4 dup(0)
+    alien_spawn_timer dw 0
+    alien_spawn_delay dw 60      ; 60 frames = ~1 segundo
+    alien_move_speed dw 1        ; Velocidade de movimento (pixels por frame)
 
     LIFES_START EQU 3
     lives db LIFES_START  ; número de vidas
@@ -119,8 +133,8 @@
     SCREEN_W    EQU 320
     SCREEN_H    EQU 200
 
-    SPR_W       EQU 22  ; para meteoro e alien
-    SPR_H       EQU 18
+    SPR_W       EQU 24  ; para meteoro e alien
+    SPR_H       EQU 20
 
     fase1   db 7 dup(" ")," ___                  _ ",13,10
             db 7 dup(" "),"| __|_ _ ___ ___     / |",13,10
@@ -179,7 +193,7 @@
     final_score_msg db "SCORE FINAL: ",0
     final_score_msg_length equ $-final_score_msg
     
-    SECONDS_START  EQU 5
+    SECONDS_START  EQU 20
 
     time db SECONDS_START
     timeout db 0
@@ -371,7 +385,7 @@
     ; Vetor de terrenos para cada fase
     terrain_vec dw offset terrain_fase1, offset terrain_fase2, offset terrain_fase3
     
-    terrain_pos dw 320 * 180  ; Linha 130 (1/3 superior da tela)
+    terrain_pos dw 320 * 150  ; Linha 130 (terreno começa na linha 130)
 
     
 .code
@@ -442,6 +456,9 @@ SELECT_OPTION:
     call UPDATE_TIME
     call UPDATE_SHIP
     call UPDATE_SHOT     ; Atualiza os tiros
+    call UPDATE_ALIENS   ; Atualiza aliens
+    call CHECK_ALIEN_SHOT_COLLISION   ; Colisão tiros vs aliens
+    call CHECK_ALIEN_SHIP_COLLISION   ; Colisão nave vs aliens
     
     ; Verifica condições de fim de jogo
     call CHECK_GAME_END
@@ -1130,6 +1147,21 @@ RENDER_LIVES proc
     push si
     push di
 
+    ; Primeiro limpa todas as posições possíveis de vidas (3 posições)
+    mov cx, LIFES_START         ; Limpa todas as 3 posições
+    mov ax, 5 * SCREEN_W + 123  ; Posição inicial
+    
+CLEAR_LIVES_LOOP:
+    push cx
+    push ax
+    mov di, ax
+    call CLEAR_SPRITE           ; Limpa cada sprite de vida
+    pop ax
+    add ax, 25                  ; Próxima posição
+    pop cx
+    loop CLEAR_LIVES_LOOP
+
+    ; Agora renderiza apenas as vidas restantes
     xor cx, cx
     mov cl, lives
     cmp cl, 0
@@ -1256,6 +1288,7 @@ END_SHIP_UPDATE:
     pop di
     pop si
     call RENDER_SHIP
+    call RENDER_ALIENS
     ret
 endp
 
@@ -1430,12 +1463,15 @@ RESET_GAME proc
     mov fase, 1
     mov time, SECONDS_START
     mov timeout, 0
-    mov terrain_pos, 320 * 130
+    mov terrain_pos, 320 * 150
     
     ; Reset all shots
     mov byte ptr [shot_active], 0
     mov byte ptr [shot_active + 1], 0
     mov byte ptr [shot_active + 2], 0
+    
+    ; Reset aliens
+    call RESET_ALIENS
     
     pop si
     pop cx
@@ -1668,12 +1704,12 @@ RENDER_TERRAIN proc
 
     mov di, terrain_pos
     dec terrain_pos
-    cmp terrain_pos, 320*130 - 1
+    cmp terrain_pos, 320*150 - 1
     jnz SKIP_POS_UPDATE
-    mov terrain_pos, 320*131 - 1 
+    mov terrain_pos, 320*151 - 1 
 
 SKIP_POS_UPDATE:
-    mov cx, 320*70  ; 70 linhas (130 a 199 - não ultrapassa a tela)
+    mov cx, 320*50  ; 50 linhas (150 a 199 - não ultrapassa a tela)
     rep movsb
 
     pop ax
@@ -1695,7 +1731,11 @@ SHOW_GAME_OVER proc
     push si
     
     call CLEAR_SCREEN
-    
+    xor cx, cx
+    mov cx, 1Eh
+    mov dx, 2710H
+    mov ah, 86H
+    int 15h
     ; Configura ES para apontar para o segmento de dados
     mov ax, ds 
     mov es, ax
@@ -1747,7 +1787,11 @@ SHOW_VICTORY proc
     push si
     
     call CLEAR_SCREEN
-    
+    xor cx, cx
+    mov cx, 1Eh
+    mov dx, 2710H
+    mov ah, 86H
+    int 15h
     ; Configura ES para apontar para o segmento de dados
     mov ax, ds 
     mov es, ax
@@ -1869,9 +1913,9 @@ MOVE_DOWN_PROC proc
     push si
     push ax
     
-    ; Verifica limites
+    ; Verifica limites (até linha 135, deixando espaço antes do terreno)
     mov bx, [ship_pos]
-    cmp bx, 320 * 115
+    cmp bx, 320 * 135
     jae END_DOWN
     
     ; Move a nave
@@ -1967,6 +2011,457 @@ END_RIGHT:
     pop ax
     pop si
     pop di
+    ret
+endp
+
+; ==================== SISTEMA DE ALIENS (PADRÃO K-STAR PATROL) ====================
+
+; Reseta sistema de aliens
+RESET_ALIENS proc
+    push ax
+    push bx
+    push cx
+    
+    mov alien_spawn_timer, 0
+    
+    mov cx, 4
+    xor bx, bx
+    
+RESET_ALIENS_LOOP:
+    mov byte ptr [alien_array_active + bx], 0
+    shl bx, 1
+    mov word ptr [alien_array_pos + bx], 0
+    shr bx, 1
+    inc bx
+    dec cx
+    jnz RESET_ALIENS_LOOP
+    
+    ; Força spawn imediato de 1 alien para teste
+    call SPAWN_ALIEN
+    
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+; Atualiza sistema de aliens
+UPDATE_ALIENS proc
+    push ax
+    push bx
+    push cx
+    push dx
+    
+    ; Incrementa timer
+    inc alien_spawn_timer
+    
+    ; Verifica spawn
+    mov ax, alien_spawn_timer
+    cmp ax, alien_spawn_delay
+    jb UPDATE_EXISTING_ALIENS
+    
+    ; Reset timer e spawna
+    mov alien_spawn_timer, 0
+    call SPAWN_ALIEN
+    
+UPDATE_EXISTING_ALIENS:
+    ; Move aliens existentes
+    mov cx, 4
+    xor bx, bx
+    
+UPDATE_ALIENS_LOOP:
+    cmp byte ptr [alien_array_active + bx], 0
+    je NEXT_UPDATE_ALIEN
+    
+    ; Pega posição do alien (BX * 2 para word array)
+    push bx
+    shl bx, 1
+    mov ax, word ptr [alien_array_pos + bx]
+    pop bx
+    
+    ; Verifica se X >= 2 para evitar underflow
+    push ax
+    push bx
+    xor dx, dx
+    mov bx, 320
+    div bx              ; ax = y, dx = x
+    pop bx
+    
+    cmp dx, 2
+    pop ax              ; recupera posição original
+    jb REMOVE_ALIEN
+    
+    ; Move para esquerda (usa velocidade configurável)
+    push bx
+    mov bx, alien_move_speed
+    sub ax, bx
+    pop bx
+    
+    push bx
+    shl bx, 1
+    mov word ptr [alien_array_pos + bx], ax
+    pop bx
+    jmp NEXT_UPDATE_ALIEN
+    
+REMOVE_ALIEN:
+    ; Limpa sprite do alien antes de desativar
+    push bx
+    shl bx, 1
+    mov di, word ptr [alien_array_pos + bx]
+    call CLEAR_SPRITE
+    pop bx
+    
+    mov byte ptr [alien_array_active + bx], 0
+    
+NEXT_UPDATE_ALIEN:
+    inc bx
+    dec cx
+    jnz UPDATE_ALIENS_LOOP
+    
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+; Spawna novo alien
+SPAWN_ALIEN proc
+    push ax
+    push bx
+    push cx
+    push dx
+    
+    ; Procura slot livre
+    mov cx, 4
+    xor bx, bx
+    
+FIND_SLOT:
+    cmp byte ptr [alien_array_active + bx], 0
+    je FOUND_SLOT
+    inc bx
+    dec cx
+    jnz FIND_SLOT
+    jmp END_SPAWN
+    
+FOUND_SLOT:
+    ; BX contém o índice do slot livre (0-3)
+    push bx             ; Salva índice do slot
+    
+    ; Gera Y aleatório (linha 20-130 para não spawnar no terreno)
+    call RANDOM_UINT16
+    xor dx, dx          ; Zera DX para divisão
+    mov cx, 110         ; Divisor em CX
+    div cx              ; AX / CX, resto em DX
+    mov ax, dx          ; Usa resto (0-109)
+    add ax, 20          ; Y entre 20-129
+    
+    ; Calcula posição: Y*320 + X
+    ; X = 298 (320 - 22 = 298, garante sprite dentro da tela)
+    mov cx, 320
+    mul cx              ; AX = Y * 320, resultado em DX:AX
+    add ax, 298         ; Adiciona X=298 (lado direito, sprite completo visível)
+    
+    ; Ativa alien
+    pop bx              ; Recupera índice do slot
+    mov byte ptr [alien_array_active + bx], 1
+    shl bx, 1           ; BX *= 2 para word array
+    mov word ptr [alien_array_pos + bx], ax
+    
+END_SPAWN:
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+; Verifica sobreposição entre aliens
+; Entrada: AX = Y do novo alien
+; Retorna: AL = 1 se há sobreposição, 0 caso contrário
+CHECK_ALIEN_OVERLAP proc
+    push bx
+    push cx
+    push dx
+    push si
+    
+    mov si, ax          ; SI = Y do novo alien
+    mov cx, 4
+    xor bx, bx
+    
+CHECK_OVERLAP_LOOP:
+    cmp byte ptr [alien_array_active + bx], 0
+    je NEXT_CHECK_OVERLAP
+    
+    ; Calcula Y do alien existente
+    push bx
+    shl bx, 1
+    mov ax, word ptr [alien_array_pos + bx]
+    pop bx
+    
+    push bx
+    mov bx, 320
+    xor dx, dx
+    div bx              ; ax = y
+    pop bx
+    
+    ; Verifica distância
+    sub ax, si
+    cmp ax, 0
+    jge POSITIVE_DIST
+    neg ax
+POSITIVE_DIST:
+    cmp ax, 25
+    jb OVERLAP_FOUND
+    
+NEXT_CHECK_OVERLAP:
+    inc bx
+    dec cx
+    jnz CHECK_OVERLAP_LOOP
+    
+    mov al, 0
+    jmp END_CHECK_OVERLAP
+    
+OVERLAP_FOUND:
+    mov al, 1
+    
+END_CHECK_OVERLAP:
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    ret
+endp
+
+; Renderiza aliens
+RENDER_ALIENS proc
+    push ax
+    push bx
+    push cx
+    push si
+    
+    mov cx, 4
+    xor bx, bx
+    
+RENDER_ALIENS_LOOP:
+    cmp byte ptr [alien_array_active + bx], 0
+    je NEXT_RENDER_ALIEN
+    
+    push bx
+    shl bx, 1
+    mov ax, word ptr [alien_array_pos + bx]
+    pop bx
+    
+    mov si, offset alien_sprite
+    call RENDER_SPRITE
+    
+NEXT_RENDER_ALIEN:
+    inc bx
+    dec cx
+    jnz RENDER_ALIENS_LOOP
+    
+    pop si
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+; Verifica colisões tiros vs aliens
+CHECK_ALIEN_SHOT_COLLISION proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    
+    mov cx, 4
+    xor bx, bx
+    
+CHECK_COLLISION_ALIEN_LOOP:
+    cmp byte ptr [alien_array_active + bx], 0
+    je NEXT_COLLISION_ALIEN
+    
+    ; Posição do alien
+    push bx
+    shl bx, 1
+    mov di, word ptr [alien_array_pos + bx]
+    pop bx
+    
+    ; Verifica cada tiro
+    push cx
+    push bx
+    
+    mov cl, shot_count
+    xor ch, ch
+    xor si, si
+    
+CHECK_COLLISION_SHOT_LOOP:
+    cmp byte ptr [shot_active + si], 0
+    je NEXT_COLLISION_SHOT
+    
+    ; Posição do tiro
+    push si
+    shl si, 1
+    mov ax, word ptr [shot_pos + si]
+    pop si
+    
+    ; Verifica colisão
+    call CHECK_COLLISION_XY
+    cmp al, 1
+    jne NEXT_COLLISION_SHOT
+    
+    ; Colisão detectada!
+    pop bx
+    pop cx
+    
+    ; Limpa sprite do alien da tela
+    push bx
+    shl bx, 1
+    mov di, word ptr [alien_array_pos + bx]
+    call CLEAR_SPRITE
+    pop bx
+    
+    ; Limpa sprite do tiro
+    push si
+    shl si, 1
+    mov di, word ptr [shot_pos + si]
+    call CLEAR_SHOT_SPRITE
+    pop si
+    
+    mov byte ptr [alien_array_active + bx], 0
+    mov byte ptr [shot_active + si], 0
+    add score, 100
+    
+    jmp NEXT_COLLISION_ALIEN
+    
+NEXT_COLLISION_SHOT:
+    inc si
+    dec cl
+    jnz CHECK_COLLISION_SHOT_LOOP
+    
+    pop bx
+    pop cx
+    
+NEXT_COLLISION_ALIEN:
+    inc bx
+    dec cx
+    jnz CHECK_COLLISION_ALIEN_LOOP
+    
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+; Verifica colisões nave vs aliens
+CHECK_ALIEN_SHIP_COLLISION proc
+    push ax
+    push bx
+    push cx
+    push di
+    
+    mov cx, 4
+    xor bx, bx
+    
+CHECK_SHIP_COLLISION_LOOP:
+    cmp byte ptr [alien_array_active + bx], 0
+    je NEXT_SHIP_COLLISION
+    
+    ; Posição do alien
+    push bx
+    shl bx, 1
+    mov di, word ptr [alien_array_pos + bx]
+    pop bx
+    
+    ; Posição da nave
+    mov ax, ship_pos
+    
+    ; Verifica colisão
+    call CHECK_COLLISION_XY
+    cmp al, 1
+    jne NEXT_SHIP_COLLISION
+    
+    ; Colisão! Perde vida
+    ; Limpa sprite do alien da tela
+    push bx
+    shl bx, 1
+    mov di, word ptr [alien_array_pos + bx]
+    call CLEAR_SPRITE
+    pop bx
+    
+    mov byte ptr [alien_array_active + bx], 0
+    dec lives
+    
+    ; Atualiza exibição de vidas na tela
+    call RENDER_LIVES
+    
+NEXT_SHIP_COLLISION:
+    inc bx
+    dec cx
+    jnz CHECK_SHIP_COLLISION_LOOP
+    
+    pop di
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+; Verifica colisão entre dois objetos
+; Entrada: AX = posição 1, DI = posição 2
+; Retorna: AL = 1 se colidiu, 0 caso contrário
+CHECK_COLLISION_XY proc
+    push bx
+    push cx
+    push dx
+    push si
+    
+    ; Calcula X,Y do objeto 1
+    mov bx, 320
+    xor dx, dx
+    div bx              ; ax = y1, dx = x1
+    mov cx, ax          ; cx = y1
+    mov si, dx          ; si = x1
+    
+    ; Calcula X,Y do objeto 2
+    mov ax, di
+    xor dx, dx
+    div bx              ; ax = y2, dx = x2
+    
+    ; Distância X
+    sub si, dx
+    cmp si, 0
+    jge ABS_X
+    neg si
+ABS_X:
+    cmp si, 20
+    ja NO_COLLISION_XY
+    
+    ; Distância Y
+    sub cx, ax
+    cmp cx, 0
+    jge ABS_Y
+    neg cx
+ABS_Y:
+    cmp cx, 15
+    ja NO_COLLISION_XY
+    
+    mov al, 1
+    jmp END_COLLISION_XY
+    
+NO_COLLISION_XY:
+    mov al, 0
+    
+END_COLLISION_XY:
+    pop si
+    pop dx
+    pop cx
+    pop bx
     ret
 endp
 
