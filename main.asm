@@ -119,13 +119,15 @@
     shot_pos dw 0, 0, 0       ; Posições dos 3 tiros
     shot_active db 0, 0, 0    ; Status dos 3 tiros (0=inativo, 1=ativo)
 
-    ; Sistema de aliens (padrão K-Star Patrol)
-    alien_count db 4
-    alien_array_pos dw 4 dup(0)
-    alien_array_active db 4 dup(0)
+    ; Sistema de aliens/meteoros (usa mesmo sistema para ambos)
+    alien_count db 5            
+    alien_array_pos dw 5 dup(0)  ; Expandido para 5
+    alien_array_active db 5 dup(0) ; Expandido para 5
     alien_spawn_timer dw 0
     alien_spawn_delay dw 60      ; 60 frames = ~1 segundo
-    alien_move_speed dw 1        ; Velocidade de movimento (pixels por frame)
+    alien_move_speed dw 1        ; Velocidade de movimento aliens (pixels por frame)
+    meteor_move_speed dw 1       ; Velocidade de movimento meteoros (pixels por frame)
+    meteor_spawn_delay dw 60     ; 45 frames entre spawns de meteoros
 
     LIFES_START EQU 3
     lives db LIFES_START  ; número de vidas
@@ -302,25 +304,31 @@
         db 30 dup(0),15 dup (4),10 dup(0),12 dup (4),50 dup(0),12 dup (4),15 dup(0),20 dup (4),65 dup(0),12 dup (4),19 dup(0)
         db 25 dup(0),18 dup (4),8 dup(0),15 dup (4),40 dup(0),15 dup (4),12 dup(0),25 dup (4),55 dup(0),15 dup (4),17 dup(0)
         db 20 dup(0),20 dup (4),6 dup(0),18 dup (4),30 dup(0),18 dup (4),10 dup(0),30 dup (4),45 dup(0),18 dup (4),15 dup(0)
+        db 20 dup(0),20 dup (4),6 dup(0),18 dup (4),30 dup(0),18 dup (4),10 dup(0),30 dup (4),45 dup(0),18 dup (4),15 dup(0)
+        db 20 dup(0),20 dup (4),6 dup(0),18 dup (4),30 dup(0),18 dup (4),10 dup(0),30 dup (4),45 dup(0),18 dup (4),15 dup(0)
+        db 20 dup(0),20 dup (4),6 dup(0),18 dup (4),30 dup(0),18 dup (4),10 dup(0),30 dup (4),45 dup(0),18 dup (4),15 dup(0)
+        db 20 dup(0),20 dup (4),6 dup(0),18 dup (4),30 dup(0),18 dup (4),10 dup(0),30 dup (4),45 dup(0),18 dup (4),15 dup(0)
+        db 20 dup(0),20 dup (4),6 dup(0),18 dup (4),30 dup(0),18 dup (4),10 dup(0),30 dup (4),45 dup(0),18 dup (4),15 dup(0)
+        db 15 dup(0),25 dup (4),4 dup(0),20 dup (4),20 dup(0),20 dup (4),8 dup(0),35 dup (4),35 dup(0),20 dup (4),13 dup(0)
+        db 15 dup(0),25 dup (4),4 dup(0),20 dup (4),20 dup(0),20 dup (4),8 dup(0),35 dup (4),35 dup(0),20 dup (4),13 dup(0)
+        db 15 dup(0),25 dup (4),4 dup(0),20 dup (4),20 dup(0),20 dup (4),8 dup(0),35 dup (4),35 dup(0),20 dup (4),13 dup(0)
+        db 15 dup(0),25 dup (4),4 dup(0),20 dup (4),20 dup(0),20 dup (4),8 dup(0),35 dup (4),35 dup(0),20 dup (4),13 dup(0)
+        db 15 dup(0),25 dup (4),4 dup(0),20 dup (4),20 dup(0),20 dup (4),8 dup(0),35 dup (4),35 dup(0),20 dup (4),13 dup(0)
         db 15 dup(0),25 dup (4),4 dup(0),20 dup (4),20 dup(0),20 dup (4),8 dup(0),35 dup (4),35 dup(0),20 dup (4),13 dup(0)
         db 320 dup (4)
         db 320 dup (4)
         db 320 dup (4)
         db 30 dup(4),4 dup(0CH),25 dup(4),3 dup(02H),35 dup(4),5 dup(0CH),30 dup(4),4 dup(02H),32 dup(4),3 dup(0CH),35 dup(4),5 dup(02H),28 dup(4),4 dup(0CH),30 dup(4)
+        db 30 dup(4),4 dup(0CH),25 dup(4),3 dup(02H),35 dup(4),5 dup(0CH),30 dup(4),4 dup(02H),32 dup(4),3 dup(0CH),35 dup(4),5 dup(02H),28 dup(4),4 dup(0CH),30 dup(4)
+        db 30 dup(4),4 dup(0CH),25 dup(4),3 dup(02H),35 dup(4),5 dup(0CH),30 dup(4),4 dup(02H),32 dup(4),3 dup(0CH),35 dup(4),5 dup(02H),28 dup(4),4 dup(0CH),30 dup(4)
         db 25 dup(4),7 dup(02H),20 dup(4),9 dup(0CH),25 dup(4),8 dup(02H),22 dup(4),10 dup(0CH),27 dup(4),9 dup(02H),25 dup(4),11 dup(0CH),20 dup(4),10 dup(02H),23 dup(4)
+        db 25 dup(4),7 dup(02H),20 dup(4),9 dup(0CH),25 dup(4),8 dup(02H),22 dup(4),10 dup(0CH),27 dup(4),9 dup(02H),25 dup(4),11 dup(0CH),20 dup(4),10 dup(02H),23 dup(4)
+        db 25 dup(4),7 dup(02H),20 dup(4),9 dup(0CH),25 dup(4),8 dup(02H),22 dup(4),10 dup(0CH),27 dup(4),9 dup(02H),25 dup(4),11 dup(0CH),20 dup(4),10 dup(02H),23 dup(4)
+        db 20 dup(4),10 dup(0CH),18 dup(4),12 dup(02H),20 dup(4),11 dup(0CH),19 dup(4),13 dup(02H),22 dup(4),12 dup(0CH),21 dup(4),14 dup(02H),18 dup(4),13 dup(0CH),19 dup(4)
+        db 20 dup(4),10 dup(0CH),18 dup(4),12 dup(02H),20 dup(4),11 dup(0CH),19 dup(4),13 dup(02H),22 dup(4),12 dup(0CH),21 dup(4),14 dup(02H),18 dup(4),13 dup(0CH),19 dup(4)
         db 20 dup(4),10 dup(0CH),18 dup(4),12 dup(02H),20 dup(4),11 dup(0CH),19 dup(4),13 dup(02H),22 dup(4),12 dup(0CH),21 dup(4),14 dup(02H),18 dup(4),13 dup(0CH),19 dup(4)
         db 15 dup(4),15 dup(02H),13 dup(4),18 dup(0CH),15 dup(4),16 dup(02H),14 dup(4),19 dup(0CH),17 dup(4),17 dup(02H),16 dup(4),20 dup(0CH),13 dup(4),18 dup(02H),15 dup(4)
         db 10 dup(4),20 dup(0CH),8 dup(4),25 dup(02H),10 dup(4),21 dup(0CH),9 dup(4),26 dup(02H),12 dup(4),22 dup(0CH),11 dup(4),27 dup(02H),8 dup(4),23 dup(0CH),10 dup(4)
-        db 320 dup (0CH)
-        db 320 dup (02H)
-        db 320 dup (0CH)
-        db 320 dup (02H)
-        db 320 dup (0CH)
-        db 320 dup (02H)
-        db 320 dup (0CH)
-        db 320 dup (02H)
-        db 320 dup (0CH)
-        db 320 dup (02H)
         db 320 dup (0CH)
         db 320 dup (02H)
         db 320 dup (0CH)
@@ -1768,6 +1776,7 @@ SHOW_GAME_OVER proc
 
     ; Aguarda tecla
     call WAIT_KEY
+    call WAIT_KEY
     call CLEAR_SCREEN
     
     pop si
@@ -1829,6 +1838,7 @@ SHOW_VICTORY proc
     mov dx, 320*18 ; linha 18, coluna 8 (centralizado)
     call PRINT_STRING
     ; Aguarda tecla
+    call WAIT_KEY
     call WAIT_KEY
     call CLEAR_SCREEN
     pop si
@@ -2024,7 +2034,12 @@ RESET_ALIENS proc
     
     mov alien_spawn_timer, 0
     
+    ; Quantidade baseada na fase: 4 (fase 1) ou 5 (fase 2)
     mov cx, 4
+    cmp fase, 2
+    jne RESET_ALIENS_START
+    mov cx, 5
+RESET_ALIENS_START:
     xor bx, bx
     
 RESET_ALIENS_LOOP:
@@ -2055,9 +2070,14 @@ UPDATE_ALIENS proc
     ; Incrementa timer
     inc alien_spawn_timer
     
-    ; Verifica spawn
+    ; Verifica spawn (delay baseado na fase)
     mov ax, alien_spawn_timer
-    cmp ax, alien_spawn_delay
+    mov dx, alien_spawn_delay
+    cmp fase, 2
+    jne USE_NORMAL_DELAY
+    mov dx, meteor_spawn_delay  ; Fase 2: spawn mais rápido
+USE_NORMAL_DELAY:
+    cmp ax, dx
     jb UPDATE_EXISTING_ALIENS
     
     ; Reset timer e spawna
@@ -2065,8 +2085,13 @@ UPDATE_ALIENS proc
     call SPAWN_ALIEN
     
 UPDATE_EXISTING_ALIENS:
-    ; Move aliens existentes
+    ; Move aliens/meteoros existentes
+    ; Quantidade baseada na fase
     mov cx, 4
+    cmp fase, 2
+    jne UPDATE_ALIENS_START
+    mov cx, 5
+UPDATE_ALIENS_START:
     xor bx, bx
     
 UPDATE_ALIENS_LOOP:
@@ -2091,9 +2116,13 @@ UPDATE_ALIENS_LOOP:
     pop ax              ; recupera posição original
     jb REMOVE_ALIEN
     
-    ; Move para esquerda (usa velocidade configurável)
+    ; Move para esquerda (velocidade baseada na fase)
     push bx
     mov bx, alien_move_speed
+    cmp fase, 2
+    jne USE_NORMAL_SPEED
+    mov bx, meteor_move_speed  ; Fase 2: meteoros mais rápidos
+USE_NORMAL_SPEED:
     sub ax, bx
     pop bx
     
@@ -2132,8 +2161,12 @@ SPAWN_ALIEN proc
     push cx
     push dx
     
-    ; Procura slot livre
+    ; Procura slot livre (quantidade baseada na fase)
     mov cx, 4
+    cmp fase, 2
+    jne SPAWN_ALIEN_START
+    mov cx, 5
+SPAWN_ALIEN_START:
     xor bx, bx
     
 FIND_SLOT:
@@ -2233,14 +2266,19 @@ END_CHECK_OVERLAP:
     ret
 endp
 
-; Renderiza aliens
+; Renderiza aliens/meteoros
 RENDER_ALIENS proc
     push ax
     push bx
     push cx
     push si
     
+    ; Quantidade baseada na fase
     mov cx, 4
+    cmp fase, 2
+    jne RENDER_ALIENS_START
+    mov cx, 5
+RENDER_ALIENS_START:
     xor bx, bx
     
 RENDER_ALIENS_LOOP:
@@ -2252,7 +2290,14 @@ RENDER_ALIENS_LOOP:
     mov ax, word ptr [alien_array_pos + bx]
     pop bx
     
+    ; Escolhe sprite baseado na fase
+    cmp fase, 2
+    je USE_METEOR_SPRITE
     mov si, offset alien_sprite
+    jmp DRAW_ENEMY
+USE_METEOR_SPRITE:
+    mov si, offset meteor_sprite
+DRAW_ENEMY:
     call RENDER_SPRITE
     
 NEXT_RENDER_ALIEN:
@@ -2267,7 +2312,7 @@ NEXT_RENDER_ALIEN:
     ret
 endp
 
-; Verifica colisões tiros vs aliens
+; Verifica colisões tiros vs aliens/meteoros
 CHECK_ALIEN_SHOT_COLLISION proc
     push ax
     push bx
@@ -2276,7 +2321,12 @@ CHECK_ALIEN_SHOT_COLLISION proc
     push si
     push di
     
+    ; Quantidade baseada na fase
     mov cx, 4
+    cmp fase, 2
+    jne CHECK_SHOT_COLLISION_START
+    mov cx, 5
+CHECK_SHOT_COLLISION_START:
     xor bx, bx
     
 CHECK_COLLISION_ALIEN_LOOP:
@@ -2313,6 +2363,11 @@ CHECK_COLLISION_SHOT_LOOP:
     jne NEXT_COLLISION_SHOT
     
     ; Colisão detectada!
+    ; Se for fase 2 (meteoros), não mata - apenas remove o tiro
+    cmp fase, 2
+    je FASE2_METEORO_HIT
+    
+    ; Fase 1 - Alien destruível
     pop bx
     pop cx
     
@@ -2333,6 +2388,23 @@ CHECK_COLLISION_SHOT_LOOP:
     mov byte ptr [alien_array_active + bx], 0
     mov byte ptr [shot_active + si], 0
     add score, 100
+    
+    jmp NEXT_COLLISION_ALIEN
+    
+FASE2_METEORO_HIT:
+    ; Meteoro indestruível - apenas remove tiro
+    pop bx
+    pop cx
+    
+    ; Limpa sprite do tiro
+    push si
+    shl si, 1
+    mov di, word ptr [shot_pos + si]
+    call CLEAR_SHOT_SPRITE
+    pop si
+    
+    mov byte ptr [shot_active + si], 0
+    ; Meteoro continua ativo, não ganha pontos
     
     jmp NEXT_COLLISION_ALIEN
     
@@ -2358,14 +2430,19 @@ NEXT_COLLISION_ALIEN:
     ret
 endp
 
-; Verifica colisões nave vs aliens
+; Verifica colisões nave vs aliens/meteoros
 CHECK_ALIEN_SHIP_COLLISION proc
     push ax
     push bx
     push cx
     push di
     
+    ; Quantidade baseada na fase
     mov cx, 4
+    cmp fase, 2
+    jne CHECK_SHIP_COLLISION_START
+    mov cx, 5
+CHECK_SHIP_COLLISION_START:
     xor bx, bx
     
 CHECK_SHIP_COLLISION_LOOP:
