@@ -106,6 +106,11 @@
     ROW_METEOR  EQU 100
     ROW_ALIEN   EQU 125
     ROW_SHIP    EQU 75
+    
+    ; Fase 3: Nave mais alta, terreno mais baixo
+    ROW_SHIP_FASE3    EQU 50      ; Nave na linha 50
+    ROW_TERRAIN_FASE3 EQU 150     ; Terreno começa na linha 150
+    ROW_ALIEN_FASE3   EQU 50      ; Aliens mais acima (linhas 50-90)
 
     meteor_pos_ini EQU ROW_METEOR*320 + 300  ; posição inicial do meteoro (linha 100, x = 300)
     meteor_pos dw meteor_pos_ini ; posi??o inicial (linha 100, x = 300)
@@ -125,9 +130,11 @@
     alien_array_active db 5 dup(0) ; Expandido para 5
     alien_spawn_timer dw 0
     alien_spawn_delay dw 60      ; 60 frames = ~1 segundo
-    alien_move_speed dw 1        ; Velocidade de movimento aliens (pixels por frame)
-    meteor_move_speed dw 1       ; Velocidade de movimento meteoros (pixels por frame)
+    alien_move_speed dw 1        ; Velocidade de movimento aliens fase 1 (pixels por frame)
+    meteor_move_speed dw 1       ; Velocidade de movimento meteoros fase 2 (pixels por frame)
     meteor_spawn_delay dw 60     ; 45 frames entre spawns de meteoros
+    alien_fase3_move_speed dw 3  ; Velocidade maior para fase 3
+    alien_fase3_spawn_delay dw 45  ; Spawn mais rápido na fase 3
 
     LIFES_START EQU 3
     lives db LIFES_START  ; número de vidas
@@ -195,7 +202,7 @@
     final_score_msg db "SCORE FINAL: ",0
     final_score_msg_length equ $-final_score_msg
     
-    SECONDS_START  EQU 20
+    SECONDS_START  EQU 60
 
     time db SECONDS_START
     timeout db 0
@@ -345,55 +352,47 @@
         db 320 dup (02H)
         db 320 dup (0CH)
 
-    ; Terreno da fase 3 - extremamente desafiador
-    terrain_fase3 db 320 dup(0)
-        db 320 dup(0)
-        db 80 dup(0),12 dup (1),228 dup(0)
-        db 75 dup(0),18 dup (1),227 dup(0)
-        db 60 dup(0),8 dup (1),15 dup(0),10 dup (1),120 dup(0),6 dup (1),25 dup(0),12 dup (1),64 dup(0)
-        db 55 dup(0),10 dup (1),12 dup(0),15 dup (1),110 dup(0),8 dup (1),20 dup(0),18 dup (1),60 dup(0)
-        db 50 dup(0),12 dup (1),10 dup(0),20 dup (1),100 dup(0),10 dup (1),18 dup(0),22 dup (1),58 dup(0)
-        db 45 dup(0),15 dup (1),8 dup(0),25 dup (1),90 dup(0),12 dup (1),15 dup(0),28 dup (1),55 dup(0)
-        db 40 dup(0),18 dup (1),6 dup(0),30 dup (1),80 dup(0),15 dup (1),12 dup(0),35 dup (1),50 dup(0)
-        db 35 dup(0),20 dup (1),4 dup(0),35 dup (1),70 dup(0),18 dup (1),10 dup(0),40 dup (1),48 dup(0)
-        db 30 dup(0),25 dup (1),2 dup(0),40 dup (1),60 dup(0),20 dup (1),8 dup(0),45 dup (1),45 dup(0)
-        db 25 dup(0),30 dup (1),45 dup (1),50 dup(0),25 dup (1),5 dup(0),50 dup (1),40 dup(0)
-        db 320 dup (1)
-        db 320 dup (1)
-        db 320 dup (1)
-        db 35 dup(1),5 dup(0FH),30 dup(1),4 dup(08H),40 dup(1),6 dup(0FH),35 dup(1),5 dup(08H),37 dup(1),4 dup(0FH),40 dup(1),6 dup(08H),33 dup(1)
-        db 30 dup(1),8 dup(08H),25 dup(1),10 dup(0FH),30 dup(1),9 dup(08H),27 dup(1),11 dup(0FH),32 dup(1),10 dup(08H),30 dup(1),12 dup(0FH),25 dup(1)
-        db 25 dup(1),12 dup(0FH),20 dup(1),15 dup(08H),25 dup(1),13 dup(0FH),22 dup(1),16 dup(08H),27 dup(1),14 dup(0FH),26 dup(1),17 dup(08H),20 dup(1)
-        db 20 dup(1),18 dup(08H),15 dup(1),22 dup(0FH),20 dup(1),19 dup(08H),17 dup(1),23 dup(0FH),22 dup(1),20 dup(08H),21 dup(1),24 dup(0FH),15 dup(1)
-        db 15 dup(1),25 dup(0FH),10 dup(1),30 dup(08H),15 dup(1),26 dup(0FH),12 dup(1),31 dup(08H),17 dup(1),27 dup(0FH),14 dup(1),32 dup(08H),10 dup(1)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
-        db 320 dup (08H)
-        db 320 dup (0FH)
+
+base    db 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 , 0, 0 
+        db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0
+        db 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0  
+        db 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0  
+        db 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0  
+        db 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0  
+        db 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0 
+        db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0  
+
         
-    ; Vetor de terrenos para cada fase
-    terrain_vec dw offset terrain_fase1, offset terrain_fase2, offset terrain_fase3
+topo    db 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 0, 0 
+        db 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0 
+        db 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 0, 0 
+        db 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 0, 0 
+        db 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 0, 0 
+        db 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 0, 0 
+        db 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 0, 0 
+        db 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0                    
+
+    ; Vetor de terrenos para cada fase (fase3 não usa terreno fixo)
+    terrain_vec dw offset terrain_fase1, offset terrain_fase2, 0
     
-    terrain_pos dw 320 * 150  ; Linha 130 (terreno começa na linha 130)
+    terrain_pos dw 0  ; Offset de scroll horizontal (0-319)
+    
+    ; Estrutura para torres da fase 3 (geração procedural)
+    MAX_TOWERS EQU 12
+    tower_heights db MAX_TOWERS dup(0)  ; Altura de cada torre (em andares)
+    tower_x_pos   dw MAX_TOWERS dup(0)  ; Posição X de cada torre
+    tower_active  db MAX_TOWERS dup(0)  ; Torre ativa? (0=não, 1=sim)
+    next_tower_x  dw 320                ; Próxima posição X para gerar torre
+    tower_spawn_counter dw 0            ; Contador para spawnar novas torres
+    tower_min_spacing   EQU 34          ; Espaçamento = 34 frames (mesma largura das torres)
+    
+    ; Variáveis temporárias para clipping de torre
+    tower_sprite_offset dw 0            ; Offset no sprite (pixels a pular)
+    tower_render_width  dw BASE_WIDTH   ; Largura a renderizar
+    
+    ; Dimensões dos andares
+    BASE_WIDTH  EQU 34  ; Largura de um andar (em pixels)
+    BASE_HEIGHT EQU 8   ; Altura de um andar (em pixels)
 
     
 .code
@@ -1002,7 +1001,15 @@ RENDER_FASE proc
 
     call CLEAR_SCREEN
 
+    ; Ajusta posição da nave baseado na fase
+    mov al, fase
+    cmp al, 3
+    jne SHIP_POS_NORMAL_RENDER
+    mov ship_pos, ROW_SHIP_FASE3*320
+    jmp SHIP_POS_SET_RENDER
+SHIP_POS_NORMAL_RENDER:
     mov ship_pos, ship_pos_ini
+SHIP_POS_SET_RENDER:
     
     ; Print Sector
     xor ax, ax
@@ -1232,6 +1239,21 @@ UPDATE_TIME proc
     
     ; Reseta o tempo para a nova fase
     mov time, SECONDS_START
+    
+    ; Reseta aliens ao mudar de fase
+    call RESET_ALIENS
+    
+    ; Ajusta posição do terreno baseado na fase
+    cmp ah, 3
+    jne TERRAIN_POS_NORMAL_ADVANCE
+    ; Fase 3: terreno mais baixo (linha 110) e inicializa torres
+    mov terrain_pos, 0
+    call INIT_FASE3_TOWERS
+    jmp TERRAIN_POS_SET_ADVANCE
+TERRAIN_POS_NORMAL_ADVANCE:
+    ; Fases 1 e 2: terreno normal (linha 150)
+    mov terrain_pos, 0
+TERRAIN_POS_SET_ADVANCE:
     
     call RENDER_FASE
     
@@ -1471,7 +1493,7 @@ RESET_GAME proc
     mov fase, 1
     mov time, SECONDS_START
     mov timeout, 0
-    mov terrain_pos, 320 * 150
+    mov terrain_pos, 0
     
     ; Reset all shots
     mov byte ptr [shot_active], 0
@@ -1480,6 +1502,9 @@ RESET_GAME proc
     
     ; Reset aliens
     call RESET_ALIENS
+    
+    ; Reset fase 3 towers
+    call INIT_FASE3_TOWERS
     
     pop si
     pop cx
@@ -1701,25 +1726,52 @@ RENDER_TERRAIN proc
     mov ax, 0A000h
     mov es, ax
 
+    ; Verifica se é fase 3 (usa renderização procedural)
+    mov al, fase
+    cmp al, 3
+    je RENDER_TERRAIN_FASE3
+
     ; Seleciona o terreno correto baseado na fase
     xor ax, ax
     mov al, fase
-    dec al                      ; fase 1->0, fase 2->1, fase 3->2
+    dec al                      ; fase 1->0, fase 2->1
     shl al, 1                   ; multiplica por 2 (offsets são words)
     mov bx, offset terrain_vec
     add bx, ax
     mov si, [bx]               ; SI = offset do terreno da fase atual
 
-    mov di, terrain_pos
-    dec terrain_pos
-    cmp terrain_pos, 320*150 - 1
-    jnz SKIP_POS_UPDATE
-    mov terrain_pos, 320*151 - 1 
-
-SKIP_POS_UPDATE:
-    mov cx, 320*50  ; 50 linhas (150 a 199 - não ultrapassa a tela)
+    ; DI = posição inicial do terreno na tela (linha 150)
+    mov di, 320*150
+    
+    ; SI já aponta para o offset do terreno
+    ; Adiciona o scroll horizontal
+    add si, terrain_pos
+    
+    ; Copia 50 linhas de 320 bytes
+    mov cx, 50
+COPY_TERRAIN_LINE:
+    push cx
+    push si
+    push di
+    
+    mov cx, 320
     rep movsb
+    
+    pop di
+    pop si
+    pop cx
+    
+    add di, 320         ; Próxima linha na tela
+    add si, 320         ; Próxima linha do terreno
+    loop COPY_TERRAIN_LINE
+    
+    ; Atualiza scroll horizontal (1 pixel por frame)
+    inc terrain_pos
+    cmp terrain_pos, 320  ; Se completou uma linha
+    jl TERRAIN_DONE_RENDER
+    mov terrain_pos, 0    ; Reseta para início
 
+TERRAIN_DONE_RENDER:
     pop ax
     pop ds  
     pop es
@@ -1728,7 +1780,430 @@ SKIP_POS_UPDATE:
     pop cx
     pop bx
     ret
+
+RENDER_TERRAIN_FASE3:
+    ; Renderização procedural para fase 3
+    ; Limpa apenas a borda esquerda (onde torres saem)
+    push ax
+    push cx
+    push di
+    push es
+    
+    mov ax, 0A000h
+    mov es, ax
+    
+    ; Limpa apenas primeiros pixels da borda esquerda (pequena margem)
+    mov di, 70*320
+    mov cx, 130
+CLEAR_LEFT_EDGE:
+    push cx
+    push di
+    mov cx, 5               ; Limpa apenas 5 pixels
+    xor al, al
+    rep stosb
+    pop di
+    pop cx
+    add di, 320
+    loop CLEAR_LEFT_EDGE
+    
+    pop es
+    pop di
+    pop cx
+    pop ax
+    
+    ; Atualiza e renderiza torres
+    call UPDATE_FASE3_TOWERS
+    call RENDER_FASE3_TOWERS
+    
+    jmp TERRAIN_DONE_RENDER
+
 endp
+
+
+; Inicializa sistema de torres da fase 3
+; Cria torres iniciais distribuídas pela tela
+INIT_FASE3_TOWERS proc
+    push ax
+    push bx
+    push cx
+    push dx
+    
+    ; Inicializa torres preenchendo a tela toda (da direita para esquerda)
+    xor bx, bx
+    mov dx, 320                      ; Começa em X = 320 (borda direita)
+    mov cx, MAX_TOWERS               ; 12 torres x 34 pixels = 408 pixels (cobre tela e mais)
+    
+INIT_TOWER_LOOP:
+    ; Ativa torre
+    mov byte ptr tower_active[bx], 1
+    
+    ; Define posição X
+    push bx
+    shl bx, 1                     ; BX = BX * 2
+    mov word ptr tower_x_pos[bx], dx
+    pop bx
+    
+    ; Altura aleatória (3 a 6 andares para início)
+    push bx
+    push cx
+    push dx
+    call RANDOM_UINT16
+    and ax, 3               ; 0-3
+    add al, 3               ; 3-6 andares
+    pop dx
+    pop cx
+    pop bx
+    mov byte ptr tower_heights[bx], al
+    
+    ; Próxima torre colada (BASE_WIDTH pixels à esquerda)
+    sub dx, BASE_WIDTH
+    
+    inc bx
+    loop INIT_TOWER_LOOP
+    
+    ; Reseta contadores
+    ; Contador em 0 porque a primeira torre já está no ciclo correto
+    mov next_tower_x, 320
+    mov tower_spawn_counter, 0
+    
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+INIT_FASE3_TOWERS endp
+
+
+; Atualiza posição das torres e gera novas
+UPDATE_FASE3_TOWERS proc
+    push ax
+    push bx
+    push cx
+    push dx
+    
+    ; Move todas as torres para esquerda
+    xor bx, bx
+    mov cx, MAX_TOWERS
+MOVE_TOWERS_LOOP:
+    cmp byte ptr tower_active[bx], 0
+    je SKIP_MOVE_TOWER
+    
+    ; Calcula offset para tower_x_pos (word array)
+    push bx
+    shl bx, 1                     ; BX = BX * 2
+    
+    ; Move torre 1 pixel para esquerda
+    dec word ptr tower_x_pos[bx]
+    
+    ; Verifica se saiu pela esquerda (X < -40)
+    mov ax, word ptr tower_x_pos[bx]
+    pop bx
+    
+    ; Se X >= 0, continua
+    test ax, ax
+    jns SKIP_MOVE_TOWER
+    
+    ; X é negativo, converte para positivo e verifica
+    neg ax
+    cmp ax, 40
+    jl SKIP_MOVE_TOWER
+    
+    ; Torre saiu pela esquerda, desativa e será respawnada
+    mov byte ptr tower_active[bx], 0
+    
+SKIP_MOVE_TOWER:
+    inc bx
+    loop MOVE_TOWERS_LOOP
+    
+    ; Verifica se deve gerar nova torre
+    inc tower_spawn_counter
+    mov ax, tower_spawn_counter
+    cmp ax, tower_min_spacing
+    jl SKIP_SPAWN_TOWER         ; Pula se counter < 34
+    
+    ; Reseta contador e gera nova torre
+    mov tower_spawn_counter, 0
+    call SPAWN_FASE3_TOWER
+    
+SKIP_SPAWN_TOWER:
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+UPDATE_FASE3_TOWERS endp
+
+
+; Gera uma nova torre aleatória
+SPAWN_FASE3_TOWER proc
+    push ax
+    push bx
+    push cx
+    
+    ; Procura slot vazio
+    xor bx, bx
+    mov cx, MAX_TOWERS
+FIND_EMPTY_SLOT:
+    cmp byte ptr tower_active[bx], 0
+    je FOUND_EMPTY_SLOT
+    inc bx
+    loop FIND_EMPTY_SLOT
+    jmp SPAWN_DONE  ; Sem slots vazios
+    
+FOUND_EMPTY_SLOT:
+    ; Ativa torre
+    mov byte ptr tower_active[bx], 1
+    
+    ; Posição X inicial (320 para spawnar fora e aparecer gradualmente)
+    push bx
+    shl bx, 1                     ; BX = BX * 2
+    mov word ptr tower_x_pos[bx], 320  ; X = 320 (fora da tela)
+    pop bx
+    
+    ; Gera altura aleatória (2 a 8 andares)
+    call RANDOM_UINT16
+    and ax, 7        ; AX = 0-7
+    add al, 2        ; AL = 2-9
+    mov byte ptr tower_heights[bx], al
+    
+SPAWN_DONE:
+    pop cx
+    pop bx
+    pop ax
+    ret
+SPAWN_FASE3_TOWER endp
+
+
+; Renderiza todas as torres ativas
+RENDER_FASE3_TOWERS proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    
+    xor bx, bx
+    mov cx, MAX_TOWERS
+RENDER_TOWERS_LOOP:
+    cmp byte ptr tower_active[bx], 0
+    je SKIP_RENDER_TOWER
+    
+    ; Renderiza esta torre
+    push bx
+    push cx
+    
+    xor ah, ah
+    mov al, byte ptr tower_heights[bx]
+    mov cx, ax                      ; CX = altura em andares
+    
+    ; Calcula offset para tower_x_pos (word array)
+    push bx
+    shl bx, 1                     ; BX = BX * 2
+    mov dx, word ptr tower_x_pos[bx]  ; DX = posição X
+    pop bx
+    
+    call RENDER_TOWER
+    
+    pop cx
+    pop bx
+    
+SKIP_RENDER_TOWER:
+    inc bx
+    loop RENDER_TOWERS_LOOP
+    
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+RENDER_FASE3_TOWERS endp
+
+
+; Renderiza uma torre na posição especificada
+; Entrada: CX = altura (número de andares), DX = posição X
+RENDER_TOWER proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    push bp
+    push es
+    
+    ; Garante direção forward para movsb
+    cld
+    
+    ; Configura ES para apontar para memória de vídeo
+    mov ax, 0A000h
+    mov es, ax
+    
+    ; Verifica se torre está visível (permite renderização parcial)
+    cmp dx, -BASE_WIDTH
+    jl TOWER_NOT_VISIBLE_JMP
+    cmp dx, 320
+    jge TOWER_NOT_VISIBLE_JMP
+    jmp TOWER_VISIBLE
+    
+TOWER_NOT_VISIBLE_JMP:
+    jmp TOWER_NOT_VISIBLE
+    
+TOWER_VISIBLE:
+    
+    push cx                 ; Salva altura da torre original
+    
+    ; Calcula clipping horizontal usando variáveis globais
+    ; DX = X da torre (pode ser negativo)
+    mov tower_sprite_offset, 0
+    mov ax, BASE_WIDTH
+    mov tower_render_width, ax
+    
+    ; Verifica se X < 0 (saindo pela esquerda)
+    cmp dx, 0
+    jge CLIP_RIGHT_CHECK
+    
+    ; X negativo: calcula offset e ajusta
+    mov ax, dx
+    neg ax                      ; AX = |X|
+    mov tower_sprite_offset, ax ; Offset = |X|
+    mov bx, BASE_WIDTH
+    sub bx, ax                  ; BX = largura - offset
+    mov tower_render_width, bx
+    mov dx, 0                   ; Desenha a partir de X=0
+    jmp CLIP_DONE
+    
+CLIP_RIGHT_CHECK:
+    ; Verifica se ultrapassa borda direita
+    mov ax, dx
+    add ax, BASE_WIDTH
+    cmp ax, 320
+    jle CLIP_DONE
+    ; Ajusta largura
+    mov ax, 320
+    sub ax, dx                  ; AX = 320 - X
+    mov tower_render_width, ax
+    
+CLIP_DONE:
+    
+    ; Calcula posição Y inicial (topo da torre)
+    ; Y_topo = ROW_TERRAIN_FASE3 - (altura * BASE_HEIGHT)
+    mov ax, cx
+    mov bl, BASE_HEIGHT
+    mul bl                  ; AX = altura * BASE_HEIGHT (tamanho total em pixels)
+    mov bx, ROW_TERRAIN_FASE3
+    sub bx, ax              ; BX = linha do terreno - altura total
+    
+    ; Permite torres altas que começam acima da tela
+    cmp bx, 0
+    jge TOWER_Y_OK
+    xor bx, bx              ; Y inicial = 0
+TOWER_Y_OK:
+    
+    ; Calcula offset linear: Y * 320 + X
+    push dx                 ; Salva X na stack
+    mov ax, bx              ; AX = Y inicial (topo da torre)
+    mov bx, 320
+    mul bx                  ; DX:AX = Y * 320
+    pop bx                  ; BX = X
+    add ax, bx              ; AX = Y * 320 + X
+    mov di, ax              ; DI = posição inicial
+    
+    ; Calcula total de andares a renderizar
+    pop ax                  ; AX = altura original da torre
+    mov bp, ax              ; BP = altura da torre
+    add ax, 6               ; +6 andares de preenchimento
+    mov cx, ax              ; CX = total de andares
+    
+RENDER_FLOOR_LOOP:
+    push cx
+    push bp
+    
+    ; Verifica se é o primeiro andar (topo da torre)
+    ; CX começa com o valor máximo (altura + 6)
+    mov ax, bp
+    add ax, 6               ; Total de andares
+    cmp cx, ax
+    pop bp
+    jne RENDER_BASE_ANDAR_2
+    
+    ; Renderiza TOPO
+    push di
+    mov si, offset topo
+    
+    ; Adiciona offset do sprite (pixels a pular)
+    add si, tower_sprite_offset
+    
+    mov cx, BASE_HEIGHT
+RENDER_TOP_LINE_LOOP:
+    push cx
+    push di
+    push si
+    
+    mov cx, tower_render_width  ; Largura a renderizar
+    rep movsb                   ; Copia CX pixels
+    
+    pop si
+    add si, BASE_WIDTH          ; Próxima linha do sprite
+    pop di
+    pop cx
+    add di, 320                 ; Próxima linha da tela
+    loop RENDER_TOP_LINE_LOOP
+    pop di
+    jmp NEXT_FLOOR
+    
+RENDER_BASE_ANDAR_2:
+    ; Renderiza andar da BASE (usado tanto para torre quanto preenchimento)
+    push di
+    mov si, offset base
+    
+    ; Adiciona offset do sprite (pixels a pular)
+    add si, tower_sprite_offset
+    
+    mov cx, BASE_HEIGHT
+RENDER_BASE_LINE_LOOP:
+    push cx
+    push di
+    push si
+    
+    mov cx, tower_render_width  ; Largura a renderizar
+    rep movsb                   ; Copia CX pixels
+    
+    pop si
+    add si, BASE_WIDTH          ; Próxima linha do sprite
+    pop di
+    pop cx
+    add di, 320                 ; Próxima linha da tela
+    loop RENDER_BASE_LINE_LOOP
+    pop di
+    
+NEXT_FLOOR:
+    ; Move para o próximo andar (descendo na tela)
+    mov ax, BASE_HEIGHT
+    mov bx, 320
+    mul bx
+    add di, ax          ; DI += BASE_HEIGHT * 320
+    
+    pop cx
+    loop RENDER_FLOOR_LOOP
+    jmp TOWER_DONE
+    
+TOWER_NOT_VISIBLE:
+    ; Torre não visível, não faz nada
+    
+TOWER_DONE:
+    pop es
+    pop bp
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+RENDER_TOWER endp
 
 ; Exibe tela de Game Over (vidas = 0)
 SHOW_GAME_OVER proc
@@ -2034,10 +2509,14 @@ RESET_ALIENS proc
     
     mov alien_spawn_timer, 0
     
-    ; Quantidade baseada na fase: 4 (fase 1) ou 5 (fase 2)
+    ; Quantidade baseada na fase: 4 (fase 1) ou 5 (fases 2 e 3)
     mov cx, 4
     cmp fase, 2
-    jne RESET_ALIENS_START
+    je RESET_ALIENS_5
+    cmp fase, 3
+    je RESET_ALIENS_5
+    jmp RESET_ALIENS_START
+RESET_ALIENS_5:
     mov cx, 5
 RESET_ALIENS_START:
     xor bx, bx
@@ -2074,8 +2553,15 @@ UPDATE_ALIENS proc
     mov ax, alien_spawn_timer
     mov dx, alien_spawn_delay
     cmp fase, 2
-    jne USE_NORMAL_DELAY
-    mov dx, meteor_spawn_delay  ; Fase 2: spawn mais rápido
+    je USE_FASE2_DELAY
+    cmp fase, 3
+    je USE_FASE3_DELAY
+    jmp USE_NORMAL_DELAY
+USE_FASE2_DELAY:
+    mov dx, meteor_spawn_delay  ; Fase 2: spawn meteoros
+    jmp USE_NORMAL_DELAY
+USE_FASE3_DELAY:
+    mov dx, alien_fase3_spawn_delay  ; Fase 3: spawn mais rápido
 USE_NORMAL_DELAY:
     cmp ax, dx
     jb UPDATE_EXISTING_ALIENS
@@ -2086,10 +2572,14 @@ USE_NORMAL_DELAY:
     
 UPDATE_EXISTING_ALIENS:
     ; Move aliens/meteoros existentes
-    ; Quantidade baseada na fase
+    ; Quantidade baseada na fase: 4 (fase 1) ou 5 (fases 2 e 3)
     mov cx, 4
     cmp fase, 2
-    jne UPDATE_ALIENS_START
+    je UPDATE_ALIENS_5
+    cmp fase, 3
+    je UPDATE_ALIENS_5
+    jmp UPDATE_ALIENS_START
+UPDATE_ALIENS_5:
     mov cx, 5
 UPDATE_ALIENS_START:
     xor bx, bx
@@ -2120,8 +2610,15 @@ UPDATE_ALIENS_LOOP:
     push bx
     mov bx, alien_move_speed
     cmp fase, 2
-    jne USE_NORMAL_SPEED
-    mov bx, meteor_move_speed  ; Fase 2: meteoros mais rápidos
+    je USE_FASE2_SPEED
+    cmp fase, 3
+    je USE_FASE3_SPEED
+    jmp USE_NORMAL_SPEED
+USE_FASE2_SPEED:
+    mov bx, meteor_move_speed  ; Fase 2: meteoros
+    jmp USE_NORMAL_SPEED
+USE_FASE3_SPEED:
+    mov bx, alien_fase3_move_speed  ; Fase 3: aliens mais rápidos
 USE_NORMAL_SPEED:
     sub ax, bx
     pop bx
@@ -2161,10 +2658,14 @@ SPAWN_ALIEN proc
     push cx
     push dx
     
-    ; Procura slot livre (quantidade baseada na fase)
+    ; Procura slot livre (quantidade baseada na fase: 4 (fase 1) ou 5 (fases 2 e 3))
     mov cx, 4
     cmp fase, 2
-    jne SPAWN_ALIEN_START
+    je SPAWN_ALIEN_5
+    cmp fase, 3
+    je SPAWN_ALIEN_5
+    jmp SPAWN_ALIEN_START
+SPAWN_ALIEN_5:
     mov cx, 5
 SPAWN_ALIEN_START:
     xor bx, bx
@@ -2181,13 +2682,29 @@ FOUND_SLOT:
     ; BX contém o índice do slot livre (0-3)
     push bx             ; Salva índice do slot
     
-    ; Gera Y aleatório (linha 20-130 para não spawnar no terreno)
+    ; Gera Y aleatório baseado na fase
     call RANDOM_UINT16
     xor dx, dx          ; Zera DX para divisão
+    
+    ; Fase 3: espaço vertical seguro (linha 25-60)
+    ; HUD está nas linhas 0-20, torres começam em Y~78
+    ; Aliens devem ficar entre a HUD e as torres
+    cmp fase, 3
+    jne SPAWN_ALIEN_NORMAL_Y
+    mov cx, 36          ; Divisor para fase 3 (36 linhas de espaço)
+    div cx              ; AX / CX, resto em DX
+    mov ax, dx          ; Usa resto (0-35)
+    add ax, 25          ; Y entre 25-60 (área segura)
+    jmp SPAWN_ALIEN_CALC_POS
+    
+SPAWN_ALIEN_NORMAL_Y:
+    ; Fases 1 e 2: Y entre 20-130
     mov cx, 110         ; Divisor em CX
     div cx              ; AX / CX, resto em DX
     mov ax, dx          ; Usa resto (0-109)
     add ax, 20          ; Y entre 20-129
+    
+SPAWN_ALIEN_CALC_POS:
     
     ; Calcula posição: Y*320 + X
     ; X = 298 (320 - 22 = 298, garante sprite dentro da tela)
@@ -2273,10 +2790,14 @@ RENDER_ALIENS proc
     push cx
     push si
     
-    ; Quantidade baseada na fase
+    ; Quantidade baseada na fase: 4 (fase 1) ou 5 (fases 2 e 3)
     mov cx, 4
     cmp fase, 2
-    jne RENDER_ALIENS_START
+    je RENDER_ALIENS_5
+    cmp fase, 3
+    je RENDER_ALIENS_5
+    jmp RENDER_ALIENS_START
+RENDER_ALIENS_5:
     mov cx, 5
 RENDER_ALIENS_START:
     xor bx, bx
@@ -2293,6 +2814,7 @@ RENDER_ALIENS_LOOP:
     ; Escolhe sprite baseado na fase
     cmp fase, 2
     je USE_METEOR_SPRITE
+    ; Fases 1 e 3 usam alien sprite
     mov si, offset alien_sprite
     jmp DRAW_ENEMY
 USE_METEOR_SPRITE:
@@ -2321,17 +2843,23 @@ CHECK_ALIEN_SHOT_COLLISION proc
     push si
     push di
     
-    ; Quantidade baseada na fase
+    ; Quantidade baseada na fase: 4 (fase 1) ou 5 (fases 2 e 3)
     mov cx, 4
     cmp fase, 2
-    jne CHECK_SHOT_COLLISION_START
+    je CHECK_SHOT_COLLISION_5
+    cmp fase, 3
+    je CHECK_SHOT_COLLISION_5
+    jmp CHECK_SHOT_COLLISION_START
+CHECK_SHOT_COLLISION_5:
     mov cx, 5
 CHECK_SHOT_COLLISION_START:
     xor bx, bx
     
 CHECK_COLLISION_ALIEN_LOOP:
     cmp byte ptr [alien_array_active + bx], 0
-    je NEXT_COLLISION_ALIEN
+    jne CHECK_ALIEN_ACTIVE
+    jmp NEXT_COLLISION_ALIEN
+CHECK_ALIEN_ACTIVE:
     
     ; Posição do alien
     push bx
@@ -2362,50 +2890,16 @@ CHECK_COLLISION_SHOT_LOOP:
     cmp al, 1
     jne NEXT_COLLISION_SHOT
     
-    ; Colisão detectada!
-    ; Se for fase 2 (meteoros), não mata - apenas remove o tiro
+    ; Colisão detectada! Chama handler apropriado
     cmp fase, 2
-    je FASE2_METEORO_HIT
-    
-    ; Fase 1 - Alien destruível
+    je CALL_METEOR_HIT
+    call HANDLE_ALIEN_DESTROYED
+    jmp END_COLLISION_CHECK
+CALL_METEOR_HIT:
+    call HANDLE_METEOR_HIT
+END_COLLISION_CHECK:
     pop bx
     pop cx
-    
-    ; Limpa sprite do alien da tela
-    push bx
-    shl bx, 1
-    mov di, word ptr [alien_array_pos + bx]
-    call CLEAR_SPRITE
-    pop bx
-    
-    ; Limpa sprite do tiro
-    push si
-    shl si, 1
-    mov di, word ptr [shot_pos + si]
-    call CLEAR_SHOT_SPRITE
-    pop si
-    
-    mov byte ptr [alien_array_active + bx], 0
-    mov byte ptr [shot_active + si], 0
-    add score, 100
-    
-    jmp NEXT_COLLISION_ALIEN
-    
-FASE2_METEORO_HIT:
-    ; Meteoro indestruível - apenas remove tiro
-    pop bx
-    pop cx
-    
-    ; Limpa sprite do tiro
-    push si
-    shl si, 1
-    mov di, word ptr [shot_pos + si]
-    call CLEAR_SHOT_SPRITE
-    pop si
-    
-    mov byte ptr [shot_active + si], 0
-    ; Meteoro continua ativo, não ganha pontos
-    
     jmp NEXT_COLLISION_ALIEN
     
 NEXT_COLLISION_SHOT:
@@ -2419,7 +2913,8 @@ NEXT_COLLISION_SHOT:
 NEXT_COLLISION_ALIEN:
     inc bx
     dec cx
-    jnz CHECK_COLLISION_ALIEN_LOOP
+    cmp cx, 0
+    jne CHECK_COLLISION_ALIEN_LOOP
     
     pop di
     pop si
@@ -2430,6 +2925,69 @@ NEXT_COLLISION_ALIEN:
     ret
 endp
 
+; Handler para alien destruído (fases 1 e 3)
+; Entrada: BX = índice do alien, SI = índice do tiro
+HANDLE_ALIEN_DESTROYED proc
+    push ax
+    push bx
+    push si
+    push di
+    
+    ; Limpa sprite do alien
+    push bx
+    shl bx, 1
+    mov di, word ptr [alien_array_pos + bx]
+    call CLEAR_SPRITE
+    pop bx
+    
+    ; Limpa sprite do tiro
+    push si
+    shl si, 1
+    mov di, word ptr [shot_pos + si]
+    call CLEAR_SHOT_SPRITE
+    pop si
+    
+    ; Desativa alien e tiro
+    mov byte ptr [alien_array_active + bx], 0
+    mov byte ptr [shot_active + si], 0
+    
+    ; Pontuação: 100 (fase 1) ou 150 (fase 3)
+    cmp fase, 3
+    je ALIEN_SCORE_150
+    add score, 100
+    jmp END_ALIEN_SCORE
+ALIEN_SCORE_150:
+    add score, 150
+END_ALIEN_SCORE:
+    
+    pop di
+    pop si
+    pop bx
+    pop ax
+    ret
+endp
+
+; Handler para meteoro atingido (fase 2)
+; Entrada: SI = índice do tiro
+HANDLE_METEOR_HIT proc
+    push si
+    push di
+    
+    ; Limpa sprite do tiro apenas
+    push si
+    shl si, 1
+    mov di, word ptr [shot_pos + si]
+    call CLEAR_SHOT_SPRITE
+    pop si
+    
+    ; Desativa tiro (meteoro continua ativo)
+    mov byte ptr [shot_active + si], 0
+    
+    pop di
+    pop si
+    ret
+endp
+
 ; Verifica colisões nave vs aliens/meteoros
 CHECK_ALIEN_SHIP_COLLISION proc
     push ax
@@ -2437,10 +2995,14 @@ CHECK_ALIEN_SHIP_COLLISION proc
     push cx
     push di
     
-    ; Quantidade baseada na fase
+    ; Quantidade baseada na fase: 4 (fase 1) ou 5 (fases 2 e 3)
     mov cx, 4
     cmp fase, 2
-    jne CHECK_SHIP_COLLISION_START
+    je CHECK_SHIP_COLLISION_5
+    cmp fase, 3
+    je CHECK_SHIP_COLLISION_5
+    jmp CHECK_SHIP_COLLISION_START
+CHECK_SHIP_COLLISION_5:
     mov cx, 5
 CHECK_SHIP_COLLISION_START:
     xor bx, bx
