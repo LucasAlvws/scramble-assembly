@@ -113,7 +113,7 @@
     ROW_ALIEN_FASE3   EQU 50      ; Aliens mais acima (linhas 50-90)
 
     meteor_pos_ini EQU ROW_METEOR*320 + 300  ; posição inicial do meteoro (linha 100, x = 300)
-    meteor_pos dw meteor_pos_ini ; posi??o inicial (linha 100, x = 300)
+    meteor_pos dw meteor_pos_ini ; posição inicial (linha 100, x = 300)
 
     ship_pos_ini EQU ROW_SHIP*320 
     ship_pos dw ship_pos_ini ; posição inicial (linha 95, coluna 41)
@@ -489,9 +489,14 @@ FINISH:
     
     ret
 
-; Procedimento para exibir os botoes INICIAR e SAIR
-; se menu == 0 o bot?o jogar fica vermelho
-; se menu == 1 o botao sair fica vermelho
+;===============================================================================
+; PRINT_BUTTONS
+;===============================================================================
+; Função: Exibe os botões do menu (INICIAR e SAIR) com destaque visual
+; Parâmetros de entrada:
+;   - menu (variável global): 0 = destaca INICIAR, 1 = destaca SAIR
+; Parâmetros de saída: Nenhum
+;===============================================================================
 PRINT_BUTTONS proc
     push ax
     mov bl, 0FH
@@ -525,7 +530,14 @@ EXIT_BTN:
     ret
 PRINT_BUTTONS endp
 
-; gera um valor aleatorio do clock com 1AH
+;===============================================================================
+; N_ALE
+;===============================================================================
+; Função: Gera um valor aleatório baseado no clock do sistema
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - random_value (variável global): valor aleatório de 16 bits
+;===============================================================================
 N_ALE proc
     push ax
     push cx
@@ -569,6 +581,13 @@ PRINT_STRING PROC
     ret
 PRINT_STRING ENDP
 
+;===============================================================================
+; PRINT_TITLE_MENU
+;===============================================================================
+; Função: Renderiza o título do menu principal na tela
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum
+;===============================================================================
 PRINT_TITLE_MENU proc
     mov ax, ds 
     mov es, ax
@@ -583,9 +602,15 @@ PRINT_TITLE_MENU proc
     ret
 PRINT_TITLE_MENU endp
 
-; Renderiza sprite da nave
-; AX = posição na tela
-; SI = offset do sprite
+;===============================================================================
+; RENDER_SPRITE
+;===============================================================================
+; Função: Renderiza um sprite genérico na memória de vídeo
+; Parâmetros de entrada:
+;   - AX: posição linear na tela (offset em 0xA000)
+;   - SI: offset do sprite na memória de dados
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_SPRITE proc
     push bx
     push cx
@@ -623,7 +648,15 @@ DRAW_SHIP_LINE:
     ret
 RENDER_SPRITE endp
 
-; usando o valor aleatorio gerado em N_ALE
+;===============================================================================
+; RANDOM_UINT16
+;===============================================================================
+; Função: Gera número pseudo-aleatório usando LCG (Linear Congruential Generator)
+; Parâmetros de entrada: Nenhum (usa random_value global)
+; Parâmetros de saída:
+;   - AX: número aleatório de 16 bits
+;   - random_value: atualizado com novo valor
+;===============================================================================
 RANDOM_UINT16 proc
     push dx
 
@@ -636,42 +669,14 @@ RANDOM_UINT16 proc
     ret
 endp
 
-; Inicializa posi??o e dire??o aleat?rias do alien
-; Requer: RANDOM_UINT16 (retorna AX pseudo-aleat?rio)
-; Usa: y fixo = 100 (troque se quiser), largura sprite = 14 (logo x<=306)
-
-INIT_ALIEN_RANDOM proc
-    push ax
-    push bx
-    push cx
-    push dx
-
-    ; x aleat?rio em [0..306]
-    call RANDOM_UINT16         ; AX = rand
-    xor dx, dx
-    mov bx, 307                ; divisor
-    div bx                     ; AX/307
-    mov cx, dx                 ; CX = x (0..306)
-
-    ; y*320 (y = 125)
-    mov bx, 125
-    mov ax, bx
-    shl bx, 6                  ; y<<6
-    shl ax, 8                  ; y<<8
-    add bx, ax                 ; bx = y*320
-
-    ; alien_pos = y*320 + x
-    add bx, cx
-    mov alien_pos, bx
-
-    pop dx
-    pop cx
-    pop bx
-    pop ax
-    ret
-INIT_ALIEN_RANDOM endp
-
-; DI = posi??o linear do canto esquerdo do sprite
+;===============================================================================
+; CLEAR_SPRITE
+;===============================================================================
+; Função: Limpa um sprite da tela (pinta de preto)
+; Parâmetros de entrada:
+;   - DI: posição linear do canto superior esquerdo do sprite
+; Parâmetros de saída: Nenhum
+;===============================================================================
 CLEAR_SPRITE proc
     push ax
     push cx
@@ -698,14 +703,56 @@ CLEAR_LINE:
     ret
 CLEAR_SPRITE endp
 
+;===============================================================================
+; INIT_ALIEN_RANDOM
+;===============================================================================
+; Função: Inicializa alien em posição aleatória (usado no menu)
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - alien_pos: posição inicial do alien (Y=100, X aleatório 0-306)
+;===============================================================================
+INIT_ALIEN_RANDOM proc
+    push ax
+    push bx
+    push cx
+    push dx
+
+    ; x aleatório em [0..306]
+    call RANDOM_UINT16         ; AX = rand
+    xor dx, dx
+    mov bx, 307                ; divisor
+    div bx                     ; AX/307
+    mov cx, dx                 ; CX = x (0..306)
+
+    ; y*320 (y = 125)
+    mov bx, 125
+    mov ax, bx
+    shl bx, 6                  ; y<<6
+    shl ax, 8                  ; y<<8
+    add bx, ax                 ; bx = y*320
+
+    ; alien_pos = y*320 + x
+    add bx, cx
+    mov alien_pos, bx
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+INIT_ALIEN_RANDOM endp
+
+;===============================================================================
 ; MOVE_WRAP_LEFT_AND_DRAW
-; Entradas:
-;   BX = &pos_var           (ex.: OFFSET meteor_pos)
-;   SI = offset sprite      (ex.: OFFSET meteor_sprite)  
-;   AX = pos_inicial        (ex.: meteor_pos_ini)
-;   DX = limite_esquerdo    (ex.: 4)
-; Efeito:
-;   - limpa, move 1 px p/ esquerda (wrap p/ direita se necessário), redesenha
+;===============================================================================
+; Função: Move sprite para esquerda com wraparound (reaparece à direita)
+; Parâmetros de entrada:
+;   - BX: ponteiro para variável de posição (ex: OFFSET meteor_pos)
+;   - SI: offset do sprite (ex: OFFSET meteor_sprite)
+;   - AX: posição inicial para wraparound
+;   - DX: limite esquerdo (wrap quando x < DX)
+; Parâmetros de saída: Nenhum (atualiza posição na variável apontada por BX)
+;===============================================================================
 MOVE_WRAP_LEFT_AND_DRAW proc
     push ax
     push bx
@@ -718,8 +765,6 @@ MOVE_WRAP_LEFT_AND_DRAW proc
     mov bp, ax              ; BP = posição inicial (para wrap)
     mov di, dx              ; DI = limite esquerdo
     
-
-
     ; Verifica limites: x = pos % 320
     mov ax, [bx]
     xor dx, dx
@@ -736,15 +781,11 @@ MOVE_WRAP_LEFT_AND_DRAW proc
     mov ax, bp              ; AX = posição inicial
     mov [bx], ax
 
-    ; jmp DRAW_SPRITE
-
 MOVE_LEFT_MENU:
     ; move para a esquerda usando MOVE_LEFT_PROC
-    ; configura parâmetros para MOVE_LEFT_PROC
     push bx                     ; salva BX original
     push di                     ; salva DI original
     
-    ; BX = ponteiro para posição (já está correto)
     mov cx, 1                   ; velocidade = 1 pixel
     mov dx, di                  ; limite esquerdo
     call MOVE_LEFT_PROC
@@ -755,7 +796,6 @@ MOVE_LEFT_MENU:
 DRAW_SPRITE:
     ; Renderiza sprite na nova posição
     mov ax, [bx]            ; AX = nova posição
-    ; SI já contém o offset do sprite
     call RENDER_SPRITE
 
     pop bp
@@ -768,15 +808,18 @@ DRAW_SPRITE:
     ret
 MOVE_WRAP_LEFT_AND_DRAW endp
 
+;===============================================================================
 ; MOVE_BOUNCE_X_AND_DRAW
-; Entradas:
-;   BX = &pos_var           (ex.: OFFSET alien_pos)
-;   BP = &dir_flag          (ex.: OFFSET alien_dir)  ; byte: 0=esq, 1=dir
-;   SI = offset sprite      (ex.: OFFSET alien_sprite)
-;   AX = L (left bound)     (ex.: ALIEN_L)
-;   DX = R (right bound)    (ex.: ALIEN_R)
-; Efeito:
-;   - limpa as bordas, move 1 px na direção, redesenha
+;===============================================================================
+; Função: Move sprite horizontalmente com bounce nas bordas (inverte direção)
+; Parâmetros de entrada:
+;   - BX: ponteiro para variável de posição
+;   - BP: ponteiro para flag de direção (0=esquerda, 1=direita)
+;   - SI: offset do sprite
+;   - AX: limite esquerdo (coordenada X)
+;   - DX: limite direito (coordenada X)
+; Parâmetros de saída: Nenhum (atualiza posição e direção nas variáveis)
+;===============================================================================
 MOVE_BOUNCE_X_AND_DRAW proc
     push ax
     push bx
@@ -805,19 +848,13 @@ MOVE_BOUNCE_X_AND_DRAW proc
     jmp MOVE_BOUNCE_MENU
 
 BOUNCE_LEFT:
-    ; chegou na borda esquerda, muda direção para direita
-    ; BP foi usado para a chamada anterior mas preciso recuperar o ponteiro da direção
-    ; Vou usar o parâmetro BP original que foi passado na chamada
     mov al, 1               ; direção = direita
     jmp SET_DIRECTION
 
 BOUNCE_RIGHT:
-    ; chegou na borda direita, muda direção para esquerda  
-    mov al, 0               ; direção = esquerda
+    xor al, al              ; direção = esquerda
 
 SET_DIRECTION:
-    ; BP original está na pilha, preciso acessar diferente
-    ; Vou usar uma abordagem mais simples - usar a variável global alien_dir
     mov alien_dir, al       ; atualiza direção global
 
 MOVE_BOUNCE_MENU:
@@ -830,15 +867,15 @@ MOVE_BOUNCE_MENU:
     cmp dl, 1
     jz  MOVE_RIGHT_BOUNCE
     
-    ; move para esquerda usando MOVE_LEFT_PROC
-    mov ax, cx              ; AX = limite esquerdo em coordenada X (do stack)
+    ; move para esquerda
+    mov ax, cx              ; AX = limite esquerdo em coordenada X
     mov cx, 1               ; velocidade = 1 pixel  
     mov dx, ax              ; limite esquerdo em coordenada X
     call MOVE_LEFT_PROC
     jmp RESTORE_BOUNCE
 
 MOVE_RIGHT_BOUNCE:
-    ; move para direita usando MOVE_RIGHT_PROC
+    ; move para direita
     mov cx, 1               ; velocidade = 1 pixel
     mov dx, di              ; limite direito em coordenada X
     call MOVE_RIGHT_PROC
@@ -848,10 +885,8 @@ RESTORE_BOUNCE:
     pop di                  ; restaura DI
     pop bx                  ; restaura BX
 
-DRAW_BOUNCE:
     ; Renderiza sprite na nova posição
     mov ax, [bx]            ; AX = nova posição
-    ; SI já contém o offset do sprite
     call RENDER_SPRITE
 
     pop bp
@@ -864,6 +899,17 @@ DRAW_BOUNCE:
     ret
 MOVE_BOUNCE_X_AND_DRAW endp
 
+;===============================================================================
+; MOVE_WRAP_RIGHT_AND_DRAW
+;===============================================================================
+; Função: Move sprite para direita com wraparound (reaparece à esquerda)
+; Parâmetros de entrada:
+;   - BX: ponteiro para variável de posição
+;   - SI: offset do sprite
+;   - AX: posição inicial para wraparound
+;   - DX: limite direito (wrap quando x > DX)
+; Parâmetros de saída: Nenhum
+;===============================================================================
 MOVE_WRAP_RIGHT_AND_DRAW proc
     push ax
     push bx
@@ -874,29 +920,28 @@ MOVE_WRAP_RIGHT_AND_DRAW proc
 
     mov si, offset ship_pos
     mov di, [si]
-    ; Verifica limites: x = ship_pos % 320
-    mov ax, [ship_pos]
+    mov ax, di
     xor dx, dx
     mov cx, 320
-    div cx                       ; DX = x
-    ; se x >= (320-SPR_W), não anda para a direita
-    mov bx, 320 - SPR_W         ; limite direito considerando largura da nave
-    cmp dx, bx
+    div cx
+
+    cmp dx, 320 - SPR_W
     jb MOVE_RIGHT_MENU
     ; wrap para a esquerda
     mov di, ship_pos
     call CLEAR_SPRITE
-    mov ship_pos, ship_pos_ini            ; AX = L
+    mov ship_pos, ship_pos_ini
 
 MOVE_RIGHT_MENU:
-    mov bx, OFFSET ship_pos     ; ponteiro para posição da nave
-    mov cx, ship_speed          ; velocidade da nave
-    mov dx, 320 - SPR_W         ; limite direito
+    mov bx, OFFSET ship_pos
+    mov cx, ship_speed
+    mov dx, 320 - SPR_W
     call MOVE_RIGHT_PROC
 
 DRAW_RIGHT:
-    
-    call RENDER_SHIP
+    mov ax, ship_pos
+    mov si, offset ship_sprite
+    call RENDER_SPRITE
 
     pop di
     pop si
@@ -907,31 +952,46 @@ DRAW_RIGHT:
     ret
 MOVE_WRAP_RIGHT_AND_DRAW endp
 
+;===============================================================================
+; MOVE_MENU
+;===============================================================================
+; Função: Anima sprites no menu principal
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum
+;===============================================================================
 MOVE_MENU PROC
     mov bx, OFFSET meteor_pos
     mov si, OFFSET meteor_sprite
-    mov ax, meteor_pos_ini      ; posição inicial para wrap
-    mov dx, 4                   ; limite esquerdo
+    mov ax, meteor_pos_ini
+    mov dx, 4
     call MOVE_WRAP_LEFT_AND_DRAW
 
     mov bx, OFFSET alien_pos
     mov bp, OFFSET alien_dir
     mov si, OFFSET alien_sprite
-    mov ax, 4                       ; limite esquerdo (coordenada X)
-    mov dx, 298                     ; limite direito (coordenada X)
+    mov ax, 4
+    mov dx, 298
     call MOVE_BOUNCE_X_AND_DRAW
 
     call MOVE_WRAP_RIGHT_AND_DRAW
+    
     ; Delay
-    ; usa interrup??o 15h que faz o delay
-    ; dx fica com o valor do deplay, quanto maior mais delay tera
     xor cx, cx
     mov dx, 2710H
     mov ah, 86H
     int 15h
+    ret
 MOVE_MENU ENDP
 
-
+;===============================================================================
+; HANDLE_INPUT
+;===============================================================================
+; Função: Gerencia entrada do teclado no menu (setas cima/baixo)
+; Parâmetros de entrada:
+;   - AH: código da tecla (48H=cima, 50H=baixo)
+; Parâmetros de saída:
+;   - menu: atualizada com a opção selecionada (0 ou 1)
+;===============================================================================
 HANDLE_INPUT PROC
     cmp ah, 48H
     je ARROW_UP
@@ -958,6 +1018,13 @@ END_HANDLE:
     ret
 ENDP
 
+;===============================================================================
+; END_GAME
+;===============================================================================
+; Função: Encerra o jogo e retorna ao modo texto
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum
+;===============================================================================
 END_GAME proc
     ; Back to text mode
     xor ah, ah
@@ -971,6 +1038,13 @@ END_GAME proc
     ret
 endp
 
+;===============================================================================
+; CLEAR_SCREEN
+;===============================================================================
+; Função: Limpa toda a tela (pinta de preto)
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum
+;===============================================================================
 CLEAR_SCREEN proc
     push ax
     push cx
@@ -992,6 +1066,14 @@ CLEAR_SCREEN proc
     ret
 endp
 
+;===============================================================================
+; RENDER_FASE
+;===============================================================================
+; Função: Renderiza o nome da fase atual na tela
+; Parâmetros de entrada:
+;   - fase (variável global): número da fase atual (1, 2 ou 3)
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_FASE proc
     push ax
     push bx
@@ -1050,6 +1132,14 @@ SUM_POINTS:
     ret
 endp
 
+;===============================================================================
+; RENDER_TIME
+;===============================================================================
+; Função: Renderiza o contador de tempo na HUD
+; Parâmetros de entrada:
+;   - time (variável global): tempo restante em segundos
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_TIME proc
     push bp
     push bx
@@ -1117,7 +1207,14 @@ LOOP_DIV:
     ret     
 endp
 
-; Renderiza o score na parte superior esquerda
+;===============================================================================
+; RENDER_SCORE
+;===============================================================================
+; Função: Renderiza a pontuação do jogador na HUD
+; Parâmetros de entrada:
+;   - score (variável global): pontuação atual
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_SCORE proc
     push si
     push bp
@@ -1154,7 +1251,14 @@ RENDER_SCORE proc
     ret
 RENDER_SCORE endp
 
-; Renderiza as vidas no centro da barra de status
+;===============================================================================
+; RENDER_LIVES
+;===============================================================================
+; Função: Renderiza o número de vidas restantes na HUD
+; Parâmetros de entrada:
+;   - lives (variável global): número de vidas restantes
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_LIVES proc
     push ax
     push bx
@@ -1209,7 +1313,13 @@ END_RENDER_LIVES:
     ret
 RENDER_LIVES endp
 
-; Renderiza toda a barra de status (score + vidas + tempo)
+;===============================================================================
+; RENDER_STATUS
+;===============================================================================
+; Função: Renderiza toda a barra de status (score, vidas e tempo)
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_STATUS proc
     call RENDER_SCORE
     call RENDER_LIVES
@@ -1217,6 +1327,13 @@ RENDER_STATUS proc
     ret
 RENDER_STATUS endp
 
+;===============================================================================
+; UPDATE_TIME
+;===============================================================================
+; Função: Atualiza o contador de tempo e gerencia transições de fase
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum
+;===============================================================================
 UPDATE_TIME proc
     push ax
     push bx
@@ -1298,6 +1415,14 @@ endp
 
 
 
+;===============================================================================
+; UPDATE_SHIP
+;===============================================================================
+; Função: Atualiza e renderiza a nave do jogador
+; Parâmetros de entrada:
+;   - ship_pos (variável global): posição da nave
+; Parâmetros de saída: Nenhum
+;===============================================================================
 UPDATE_SHIP proc
     push si
     push di
@@ -1323,7 +1448,14 @@ END_SHIP_UPDATE:
 endp
 
 
-; Proc para controle da nave
+;===============================================================================
+; HANDLE_CONTROLS
+;===============================================================================
+; Função: Gerencia os controles do jogador (movimentação e disparo)
+; Parâmetros de entrada:
+;   - Teclado: W/S (cima/baixo), A/D (esquerda/direita), SPACE (atirar)
+; Parâmetros de saída: Nenhum
+;===============================================================================
 HANDLE_CONTROLS proc
     push si
     push di
@@ -1390,9 +1522,16 @@ END_CONTROLS:
 endp
 
 ; AL = axis (0 is X, 1 is Y)
-; AH = direction (0 is positive, 1 is negative)
-; SI = position pointer
-; BX = increment
+;===============================================================================
+; MOVE_SPRITE
+;===============================================================================
+; Função: Move um sprite na tela
+; Parâmetros de entrada:
+;   - AH: direção (0=positiva, 1=negativa)
+;   - SI: ponteiro para variável de posição
+;   - BX: incremento de movimento
+; Parâmetros de saída: Nenhum
+;===============================================================================
 MOVE_SPRITE proc
     push si
     push ax
@@ -1428,6 +1567,14 @@ SAVE_POS:
     ret
 endp
 
+;===============================================================================
+; RENDER_SHIP
+;===============================================================================
+; Função: Renderiza a nave do jogador na tela
+; Parâmetros de entrada:
+;   - ship_pos (variável global): posição da nave
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_SHIP proc
     push si
     push di
@@ -1445,6 +1592,14 @@ RENDER_SHIP proc
     ret
 endp
 
+;===============================================================================
+; RESET_SHIP
+;===============================================================================
+; Função: Reseta a posição da nave para a inicial
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - ship_pos: definida para posição inicial
+;===============================================================================
 RESET_SHIP proc
     push si
     push bx
@@ -1456,6 +1611,14 @@ RESET_SHIP proc
     ret
 endp
 
+;===============================================================================
+; RENDER_ALIEN
+;===============================================================================
+; Função: Renderiza um alien individual na tela
+; Parâmetros de entrada:
+;   - AX: posição linear na tela
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_ALIEN proc
     ; AX = posição na tela
     push di
@@ -1469,6 +1632,14 @@ RENDER_ALIEN proc
     ret
 endp
 
+;===============================================================================
+; RENDER_METEOR
+;===============================================================================
+; Função: Renderiza um meteoro individual na tela (fase 2)
+; Parâmetros de entrada:
+;   - AX: posição linear na tela
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_METEOR proc
     ; AX = posição na tela
     push di
@@ -1482,7 +1653,15 @@ RENDER_METEOR proc
     ret
 endp
 
-; Reseta o jogo (score, vidas, fase)
+;===============================================================================
+; RESET_GAME
+;===============================================================================
+; Função: Reseta todas as variáveis do jogo para o estado inicial
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - score = 0, lives = 3, fase = 1, time = 10
+;   - Reseta nave, tiros, aliens e torres
+;===============================================================================
 RESET_GAME proc
     push ax
     push cx
@@ -1512,7 +1691,15 @@ RESET_GAME proc
     ret
 endp
 
-; Sistema de Tiro Múltiplo (3 tiros)
+;===============================================================================
+; SHOOT
+;===============================================================================
+; Função: Dispara um tiro a partir da nave do jogador
+; Parâmetros de entrada:
+;   - ship_pos (variável global): posição da nave
+; Parâmetros de saída:
+;   - Cria novo tiro ativo (se houver slot disponível)
+;===============================================================================
 SHOOT proc
     push ax
     push bx
@@ -1562,6 +1749,13 @@ END_SHOOT:
 SHOOT endp
 
 
+;===============================================================================
+; UPDATE_SHOT
+;===============================================================================
+; Função: Atualiza e move todos os tiros ativos na tela
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum (atualiza arrays shot_pos e shot_active)
+;===============================================================================
 UPDATE_SHOT proc
     push di
     push si
@@ -1642,9 +1836,15 @@ NEXT_SHOT:
     ret
 UPDATE_SHOT endp
 
-; Renderiza sprite da nave
-; AX = posição na tela
-; SI = offset do sprite
+;===============================================================================
+; RENDER_SHOT_SPRITE
+;===============================================================================
+; Função: Renderiza o sprite de um tiro
+; Parâmetros de entrada:
+;   - AX: posição linear na tela
+;   - SI: offset do sprite do tiro
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_SHOT_SPRITE proc
     push bx
     push cx
@@ -1682,7 +1882,14 @@ DRAW_SHOT_LINE:
     ret
 RENDER_SHOT_SPRITE endp
 
-; Limpa sprite do tiro na posição DI
+;===============================================================================
+; CLEAR_SHOT_SPRITE
+;===============================================================================
+; Função: Limpa o sprite de um tiro da tela
+; Parâmetros de entrada:
+;   - DI: posição linear do tiro
+; Parâmetros de saída: Nenhum
+;===============================================================================
 CLEAR_SHOT_SPRITE proc
     push ax
     push cx
@@ -1710,7 +1917,14 @@ CLEAR_SHOT_LINE:
 CLEAR_SHOT_SPRITE endp
 
 
-; Renderiza o terreno baseado na fase atual
+;===============================================================================
+; RENDER_TERRAIN
+;===============================================================================
+; Função: Renderiza o terreno apropriado para a fase atual
+; Parâmetros de entrada:
+;   - fase (variável global): fase atual (1, 2 ou 3)
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_TERRAIN proc
     push bx
     push cx
@@ -1820,8 +2034,14 @@ CLEAR_LEFT_EDGE:
 endp
 
 
-; Inicializa sistema de torres da fase 3
-; Cria torres iniciais distribuídas pela tela
+;===============================================================================
+; INIT_FASE3_TOWERS
+;===============================================================================
+; Função: Inicializa o sistema de torres procedurais da fase 3
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - Arrays tower_heights, tower_x_pos e tower_active inicializados
+;===============================================================================
 INIT_FASE3_TOWERS proc
     push ax
     push bx
@@ -1874,7 +2094,14 @@ INIT_TOWER_LOOP:
 INIT_FASE3_TOWERS endp
 
 
-; Atualiza posição das torres e gera novas
+;===============================================================================
+; UPDATE_FASE3_TOWERS
+;===============================================================================
+; Função: Atualiza movimento das torres e gera novas quando necessário
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - Atualiza posições e spawna novas torres
+;===============================================================================
 UPDATE_FASE3_TOWERS proc
     push ax
     push bx
@@ -1934,7 +2161,14 @@ SKIP_SPAWN_TOWER:
 UPDATE_FASE3_TOWERS endp
 
 
-; Gera uma nova torre aleatória
+;===============================================================================
+; SPAWN_FASE3_TOWER
+;===============================================================================
+; Função: Spawna uma nova torre com altura aleatória
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - Nova torre criada em slot disponível (se houver)
+;===============================================================================
 SPAWN_FASE3_TOWER proc
     push ax
     push bx
@@ -1974,7 +2208,13 @@ SPAWN_DONE:
 SPAWN_FASE3_TOWER endp
 
 
-; Renderiza todas as torres ativas
+;===============================================================================
+; RENDER_FASE3_TOWERS
+;===============================================================================
+; Função: Renderiza todas as torres ativas na tela
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_FASE3_TOWERS proc
     push ax
     push bx
@@ -2022,8 +2262,15 @@ SKIP_RENDER_TOWER:
 RENDER_FASE3_TOWERS endp
 
 
-; Renderiza uma torre na posição especificada
-; Entrada: CX = altura (número de andares), DX = posição X
+;===============================================================================
+; RENDER_TOWER
+;===============================================================================
+; Função: Renderiza uma torre individual com clipping horizontal
+; Parâmetros de entrada:
+;   - CX: altura da torre (número de andares: 2-9)
+;   - DX: posição X da torre
+; Parâmetros de saída: Nenhum
+;===============================================================================
 RENDER_TOWER proc
     push ax
     push bx
@@ -2205,7 +2452,13 @@ TOWER_DONE:
     ret
 RENDER_TOWER endp
 
-; Exibe tela de Game Over (vidas = 0)
+;===============================================================================
+; SHOW_GAME_OVER
+;===============================================================================
+; Função: Exibe tela de Game Over quando o jogador perde todas as vidas
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum (aguarda tecla e retorna ao menu)
+;===============================================================================
 SHOW_GAME_OVER proc
     push ax
     push bx
@@ -2262,7 +2515,14 @@ SHOW_GAME_OVER proc
     ret
 SHOW_GAME_OVER endp
 
-; Exibe tela de Vitória (completou todas as fases)
+;===============================================================================
+; SHOW_VICTORY
+;===============================================================================
+; Função: Exibe tela de vitória quando o jogador completa todas as fases
+; Parâmetros de entrada:
+;   - score (variável global): pontuação final
+; Parâmetros de saída: Nenhum (aguarda tecla e retorna ao menu)
+;===============================================================================
 SHOW_VICTORY proc
     push ax
     push bx
@@ -2324,7 +2584,13 @@ SHOW_VICTORY proc
     ret
 SHOW_VICTORY endp
 
-; Aguarda qualquer tecla ser pressionada
+;===============================================================================
+; WAIT_KEY
+;===============================================================================
+; Função: Aguarda qualquer tecla ser pressionada
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída: Nenhum
+;===============================================================================
 WAIT_KEY proc
     push ax
     
@@ -2340,8 +2606,14 @@ WAIT_KEY_LOOP:
     ret
 WAIT_KEY endp
 
-; Verifica condições de fim de jogo
-; Retorna: AL = 0 (continua), 1 (game over), 2 (vitória)
+;===============================================================================
+; CHECK_GAME_END
+;===============================================================================
+; Função: Verifica se o jogo terminou (game over ou vitória)
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - AL: 0 (continua jogando), 1 (game over), 2 (vitória)
+;===============================================================================
 CHECK_GAME_END proc
     push bx
     
@@ -2369,6 +2641,16 @@ END_CHECK:
     ret
 CHECK_GAME_END endp
 
+;===============================================================================
+; MOVE_UP_PROC
+;===============================================================================
+; Função: Move a nave do jogador para cima
+; Parâmetros de entrada:
+;   - ship_pos (variável global): posição atual da nave
+;   - ship_speed (constante): velocidade de movimento
+; Parâmetros de saída:
+;   - ship_pos: atualizada com nova posição
+;===============================================================================
 MOVE_UP_PROC proc
     push di
     push si
@@ -2393,6 +2675,16 @@ END_UP:
     ret
 endp
 
+;===============================================================================
+; MOVE_DOWN_PROC
+;===============================================================================
+; Função: Move a nave do jogador para baixo
+; Parâmetros de entrada:
+;   - ship_pos (variável global): posição atual da nave
+;   - ship_speed (constante): velocidade de movimento
+; Parâmetros de saída:
+;   - ship_pos: atualizada com nova posição
+;===============================================================================
 MOVE_DOWN_PROC proc
     push di
     push si
@@ -2408,7 +2700,6 @@ MOVE_DOWN_PROC proc
     xor ah, ah
     mov bx, ship_speed
     call MOVE_SPRITE
-
     
 END_DOWN:
     pop ax
@@ -2417,11 +2708,18 @@ END_DOWN:
     ret
 endp
 
+;===============================================================================
+; MOVE_LEFT_PROC
+;===============================================================================
+; Função: Move sprite para a esquerda (genérica, reutilizável)
+; Parâmetros de entrada:
+;   - BX: ponteiro para variável de posição (ex: OFFSET ship_pos)
+;   - CX: velocidade de movimento em pixels
+;   - DX: limite esquerdo em coordenada X (ex: 4)
+; Parâmetros de saída:
+;   - Posição apontada por BX atualizada
+;===============================================================================
 MOVE_LEFT_PROC proc
-    ; Entradas:
-    ;   BX = ponteiro para posição (ex.: OFFSET ship_pos)
-    ;   CX = velocidade (ex.: ship_speed)
-    ;   DX = limite esquerdo (ex.: 4)
     push di
     push si
     push ax
@@ -2458,11 +2756,18 @@ END_LEFT:
     ret
 endp
 
+;===============================================================================
+; MOVE_RIGHT_PROC
+;===============================================================================
+; Função: Move sprite para a direita (genérica, reutilizável)
+; Parâmetros de entrada:
+;   - BX: ponteiro para variável de posição (ex: OFFSET ship_pos)
+;   - CX: velocidade de movimento em pixels
+;   - DX: limite direito em coordenada X (ex: 320-SPR_W)
+; Parâmetros de saída:
+;   - Posição apontada por BX atualizada
+;===============================================================================
 MOVE_RIGHT_PROC proc
-    ; Entradas:
-    ;   BX = ponteiro para posição (ex.: OFFSET alien_pos)
-    ;   CX = velocidade (ex.: 1)
-    ;   DX = limite direito em coordenada X (ex.: 320-SPR_W)
     push di
     push si
     push ax
@@ -2501,7 +2806,15 @@ endp
 
 ; ==================== SISTEMA DE ALIENS (PADRÃO K-STAR PATROL) ====================
 
-; Reseta sistema de aliens
+;===============================================================================
+; RESET_ALIENS
+;===============================================================================
+; Função: Reseta o sistema de aliens/meteoros para estado inicial
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - Arrays alien_array_active e alien_array_pos zerados
+;   - alien_spawn_timer resetado
+;===============================================================================
 RESET_ALIENS proc
     push ax
     push bx
@@ -2539,7 +2852,14 @@ RESET_ALIENS_LOOP:
     ret
 endp
 
-; Atualiza sistema de aliens
+;===============================================================================
+; UPDATE_ALIENS
+;===============================================================================
+; Função: Atualiza movimento e spawn de aliens/meteoros
+; Parâmetros de entrada: Nenhum
+; Parâmetros de saída:
+;   - Atualiza posições, spawna novos aliens, verifica colisões
+;===============================================================================
 UPDATE_ALIENS proc
     push ax
     push bx
@@ -2651,7 +2971,15 @@ NEXT_UPDATE_ALIEN:
     ret
 endp
 
-; Spawna novo alien
+;===============================================================================
+; SPAWN_ALIEN
+;===============================================================================
+; Função: Spawna um novo alien/meteoro em posição aleatória
+; Parâmetros de entrada:
+;   - fase (variável global): determina tipo e quantidade
+; Parâmetros de saída:
+;   - Novo alien criado em slot disponível (se houver)
+;===============================================================================
 SPAWN_ALIEN proc
     push ax
     push bx
