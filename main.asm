@@ -1,32 +1,29 @@
-
-; M0 ? Sanity check: texto -> 13h -> desenha 1 pixel -> volta pro texto
 .model small
 .stack
 
 .data
-    ale dw 0
-    menu db 0
-    fase db 1
+; VARIÁVEIS GLOBAIS
+    ale dw 0              ; Semente para geração de números aleatórios (int 1AH)
+    menu db 0             ; Seleção do menu: 0=JOGAR, 1=SAIR
+    fase db 1             ; Fase atual: 1, 2 ou 3
+
+; TELA INICIAL - Botões e título
     btn_iniciar db  14 dup(" "),218,196,196,196,196,196,196,196,196,196,191,13,10
                  db 14 dup(" "),179,"  JOGAR  ",179,10,13
                  db 14 dup(" "),192,196,196,196,196,196,196,196,196,196,217,13,10
-
     btn_iniciar_length equ $-btn_iniciar
 
     btn_sair db  14 dup(" "),218,196,196,196,196,196,196,196,196,196,191,13,10
               db 14 dup(" "),179,"  SAIR   ",179,10,13
               db 14 dup(" "),192,196,196,196,196,196,196,196,196,196,217,13,10
-
     btn_sair_length equ $-btn_sair
     string  db 2 dup(" "),"                                    ",13,10
             db 2 dup(" "),"  ___                    _    _     ",13,10
             db 2 dup(" ")," / __| __ _ _ __ _ _ __ | |__| |___ ",13,10
             db 2 dup(" ")," \__ \/ _| '_/ _` | '  \| '_ \ / -_)",13,10
             db 2 dup(" ")," |___/\__|_| \__,_|_|_|_|_.__/_\___|",13,10
-
-
     string_length equ $-string
-    meteor_sprite   db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    meteor_sprite   db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  ; Meteoro 24x20 (menu e fase 2)
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                     db 0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0
                     db 0,0,0,0,0,0,1,1,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0,0
@@ -48,7 +45,7 @@
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 
-    alien_sprite    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    alien_sprite    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  ; Alien 24x20 (menu e fases 1/3)
                     db 0,0,0,0,0,0,0,0,0,0AH,0AH,0AH,2,0EH,0AH,0AH,0AH,0,0,0,0,0,0,0
                     db 0,0,0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0,0
                     db 0,0,0,0,0,0,0EH,2,2,2,2,2,2,2,2,2,2,0EH,0,0,0,0,0,0
@@ -70,11 +67,10 @@
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
-    alien_pos dw 125*320 + 300 ; posição inicial (linha 125, x = 300)
-    alien_dir db 0  ; direção do alien (0=esquerda, 1=direita)
+    alien_pos dw 125*320 + 300  ; Posição linear do alien no menu
+    alien_dir db 0              ; Direção do movimento: 0=esquerda, 1=direita
     
-    ; Sprite da nave principal (29x13 pixels) - baseado no exemplo
-    ship_sprite db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    ship_sprite db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  ; Nave 24x20
                 db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                 db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                 db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -95,56 +91,59 @@
                 db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                 db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
-    ; Sprite do tiro (8x6 pixels) - horizontal
-    shot_sprite db 0,0,0,0,0,0
+    shot_sprite db 0,0,0,0,0,0  ; Tiro 6x8
                 db 0,0,0,0,0,0
                 db 0,0,15,15,0,0
                 db 0,0,15,15,0,0
                 db 0,0,0,0,0,0
                 db 0,0,0,0,0,0
 
+; POSICIONAMENTO - Tela inicial e fases
     ROW_METEOR  EQU 100
     ROW_ALIEN   EQU 125
     ROW_SHIP    EQU 75
     
-    ; Fase 3: Nave mais alta, terreno mais baixo
-    ROW_SHIP_FASE3    EQU 50      ; Nave na linha 50
-    ROW_TERRAIN_FASE3 EQU 150     ; Terreno começa na linha 150
-    ROW_ALIEN_FASE3   EQU 50      ; Aliens mais acima (linhas 50-90)
+    ROW_SHIP_FASE3    EQU 50
+    ROW_TERRAIN_FASE3 EQU 150
+    ROW_ALIEN_FASE3   EQU 50
 
-    meteor_pos_ini EQU ROW_METEOR*320 + 300  ; posição inicial do meteoro (linha 100, x = 300)
-    meteor_pos dw meteor_pos_ini ; posi??o inicial (linha 100, x = 300)
+    meteor_pos_ini EQU ROW_METEOR*320 + 300
+    meteor_pos dw meteor_pos_ini  ; Posição atual do meteoro (animado no menu)
 
     ship_pos_ini EQU ROW_SHIP*320 
-    ship_pos dw ship_pos_ini ; posição inicial (linha 95, coluna 41)
-    ship_speed EQU 5
+    ship_pos dw ship_pos_ini      ; Posição atual da nave (atualizada no jogo)
+    ship_speed EQU 5              ; Velocidade da nave em pixels por frame
     
-    ; Sistema de tiro (3 tiros simultâneos)
+; SISTEMA DE TIRO (3 simultâneos)
     shot_count db 3
-    shot_pos dw 0, 0, 0       ; Posições dos 3 tiros
-    shot_active db 0, 0, 0    ; Status dos 3 tiros (0=inativo, 1=ativo)
+    shot_pos dw 0, 0, 0           ; Posições lineares dos 3 tiros
+    shot_active db 0, 0, 0        ; Status de cada tiro: 0=inativo, 1=ativo
 
-    ; Sistema de aliens/meteoros (usa mesmo sistema para ambos)
-    alien_count db 5            
-    alien_array_pos dw 5 dup(0)  ; Expandido para 5
-    alien_array_active db 5 dup(0) ; Expandido para 5
-    alien_spawn_timer dw 0
-    alien_spawn_delay dw 60      ; 60 frames = ~1 segundo
-    alien_move_speed dw 1        ; Velocidade de movimento aliens fase 1 (pixels por frame)
-    meteor_move_speed dw 1       ; Velocidade de movimento meteoros fase 2 (pixels por frame)
-    meteor_spawn_delay dw 60     ; 45 frames entre spawns de meteoros
-    alien_fase3_move_speed dw 3  ; Velocidade maior para fase 3
-    alien_fase3_spawn_delay dw 45  ; Spawn mais rápido na fase 3
+; SISTEMA DE INIMIGOS (aliens fase 1/3, meteoros fase 2)
+    alien_count db 5
+    alien_array_pos dw 5 dup(0)         ; Posições dos 5 inimigos
+    alien_array_active db 5 dup(0)      ; Status: 0=inativo, 1=ativo
+    alien_spawn_timer dw 0              ; Contador de frames até próximo spawn
+    
+    ; CONFIGURAÇÃO: Velocidades e delays de spawn por fase
+    alien_spawn_delay dw 60             ; Fase 1: 60 frames entre spawns
+    alien_move_speed dw 1               ; Fase 1: 1 pixel por frame
+    meteor_move_speed dw 1              ; Fase 2: 1 pixel por frame  
+    meteor_spawn_delay dw 60            ; Fase 2: 60 frames entre spawns
+    alien_fase3_move_speed dw 3         ; Fase 3: 3 pixels por frame (mais rápido)
+    alien_fase3_spawn_delay dw 45       ; Fase 3: 45 frames entre spawns (mais frequente)
 
-    LIFES_START EQU 3
-    lives db LIFES_START  ; número de vidas
+; CONFIGURAÇÕES GERAIS
+    LIFES_START EQU 3         ; CONFIGURAÇÃO: vidas iniciais do jogador
+    lives db LIFES_START      ; Vidas restantes
 
-    SCREEN_W    EQU 320
-    SCREEN_H    EQU 200
+    SCREEN_W    EQU 320       ; Largura da tela em pixels
+    SCREEN_H    EQU 200       ; Altura da tela em pixels
 
-    SPR_W       EQU 24  ; para meteoro e alien
-    SPR_H       EQU 20
+    SPR_W       EQU 24        ; Largura padrão dos sprites
+    SPR_H       EQU 20        ; Altura padrão dos sprites
 
+; TELAS DE FASE
     fase1   db 7 dup(" ")," ___                  _ ",13,10
             db 7 dup(" "),"| __|_ _ ___ ___     / |",13,10
             db 7 dup(" "),"| _/ _` (_-</ -_)    | |",13,10
@@ -167,10 +166,9 @@
             db 7 dup(" "),"                        ",13,10
 
     fase_string_length equ $-fase3
+    fase_vec dw offset fase1, offset fase2, offset fase3  ; Vetor de ponteiros para telas
     
-    fase_vec dw offset fase1, offset fase2, offset fase3
-    
-    ; ASCII art para Game Over
+; TELAS DE FIM
     game_over_msg   db 5 dup(" "),"                          ",13,10
                     db 5 dup(" "),"   ___   _   __  __ ___  ",13,10
                     db 5 dup(" "),"  / __| /_\ |  \/  | __| ",13,10
@@ -183,7 +181,6 @@
 
     game_over_msg_length equ $-game_over_msg
     
-    ; ASCII art para Vencedor
     vencedor_msg    db 2 dup(" "),"                                    ",13,10
                     db 2 dup(" ")," __   __                  _         ",13,10
                     db 2 dup(" ")," \ \ / /__ _ _  __ ___ __| |___ _ _ ",13,10
@@ -193,34 +190,29 @@
 
     vencedor_msg_length equ $-vencedor_msg
 
-    
-    ; Mensagem para pressionar tecla
     press_key_msg db "Pressione qualquer tecla",13,10,0
     press_key_msg_length equ $-press_key_msg
     
-    ; Mensagem de score final
     final_score_msg db "SCORE FINAL: ",0
     final_score_msg_length equ $-final_score_msg
     
-    SECONDS_START  EQU 60
+; TEMPO E PONTUAÇÃO
+    SECONDS_START  EQU 60         ; CONFIGURAÇÃO: tempo por fase em segundos
 
-    time db SECONDS_START
-    timeout db 0
-    time_buffer db '00'
+    time db SECONDS_START         ; Tempo restante da fase
+    timeout db 0                  ; Flag: 1=tempo esgotado, 0=ainda tem tempo
+    time_buffer db '00'           ; Buffer para conversão do tempo em string
     time_buffer_len equ $-time_buffer
-
-    
     time_str db "TEMPO:"
     time_str_len equ $-time_str
     
-    score dw 0
-    score_buffer db '00000'
+    score dw 0                    ; Pontuação atual do jogador
+    score_buffer db '00000'       ; Buffer para conversão do score em string
     score_buffer_len equ $-score_buffer
-    
     score_str db "SCORE:"
     score_str_len equ $-score_str
     
-    ; Terreno da fase 1
+; TERRENOS (70 linhas, linha 130-199)
     terrain_fase1 db 320 dup(0)
         db 320 dup(0)
         db 168 dup(0),3 dup (6),149 dup(0)
@@ -299,7 +291,7 @@
         db 320 dup (0DH)
         db 320 dup (05H)
     
-    ; Terreno da fase 2 - mais desafiador com mais obstáculos
+    ; Fase 2
     terrain_fase2 db 320 dup(0)
         db 320 dup(0)
         db 120 dup(0),8 dup (4),192 dup(0)
@@ -353,7 +345,8 @@
         db 320 dup (0CH)
 
 
-base    db 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 , 0, 0 
+; ESTRUTURAS DE BASE - FASE 3 (34x8)
+    base    db 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 , 0, 0 
         db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0
         db 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0  
         db 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0  
@@ -362,7 +355,6 @@ base    db 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 7, 7, 7, 7, 7, 7, 7, 
         db 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 7, 7, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 0BH, 7, 7, 0, 0 
         db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0  
 
-        
 topo    db 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 0, 0 
         db 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0 
         db 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 0, 0 
@@ -372,110 +364,115 @@ topo    db 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 
         db 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 0, 0 
         db 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0                    
 
-    ; Vetor de terrenos para cada fase (fase3 não usa terreno fixo)
-    terrain_vec dw offset terrain_fase1, offset terrain_fase2, 0
-    
-    terrain_pos dw 0  ; Offset de scroll horizontal (0-319)
-    
-    ; Estrutura para torres da fase 3 (geração procedural)
-    MAX_TOWERS EQU 12
-    tower_heights db MAX_TOWERS dup(0)  ; Altura de cada torre (em andares)
+    terrain_vec dw offset terrain_fase1, offset terrain_fase2, 0  ; Vetor de terrenos
+    terrain_pos dw 0              ; Offset de scroll horizontal (0-319)
+
+; SISTEMA DE TORRES - FASE 3
+    MAX_TOWERS EQU 12                   ; CONFIGURAÇÃO: número máximo de torres simultâneas
+    tower_heights db MAX_TOWERS dup(0)  ; Altura de cada torre em andares
     tower_x_pos   dw MAX_TOWERS dup(0)  ; Posição X de cada torre
-    tower_active  db MAX_TOWERS dup(0)  ; Torre ativa? (0=não, 1=sim)
+    tower_active  db MAX_TOWERS dup(0)  ; Status: 0=inativa, 1=ativa
     next_tower_x  dw 320                ; Próxima posição X para gerar torre
-    tower_spawn_counter dw 0            ; Contador para spawnar novas torres
-    tower_min_spacing   EQU 34          ; Espaçamento = 34 frames (mesma largura das torres)
+    tower_spawn_counter dw 0            ; Contador de frames para spawn
+    tower_min_spacing   EQU 34          ; CONFIGURAÇÃO: espaçamento mínimo entre torres
     
-    ; Variáveis temporárias para clipping de torre
-    tower_sprite_offset dw 0            ; Offset no sprite (pixels a pular)
-    tower_render_width  dw BASE_WIDTH   ; Largura a renderizar
+    tower_sprite_offset dw 0            ; Offset para clipping de torre
+    tower_render_width  dw BASE_WIDTH   ; Largura visível da torre
     
-    ; Dimensões dos andares
-    BASE_WIDTH  EQU 34  ; Largura de um andar (em pixels)
-    BASE_HEIGHT EQU 8   ; Altura de um andar (em pixels)
+    BASE_WIDTH  EQU 34                  ; Largura de um andar em pixels
+    BASE_HEIGHT EQU 8                   ; Altura de um andar em pixels
 
     
+; CÓDIGO PRINCIPAL
 .code
 MAIN:
+    ; Inicializa segmentos de dados e vídeo
     mov AX, @data
     mov DS, AX
     mov AX, 0A000H
     mov ES, AX
     xor DI, DI
 
+    ; Gera valor aleatório e inicializa alien do menu
     call N_ALE
     call INIT_ALIEN_RANDOM
 
-    ; Define o modo de video
+    ; Ativa modo de vídeo 13h (320x200, 256 cores)
     xor ah, ah
     xor bh, bh
     mov al, 13h
     int 10h
 
+; LOOP DO MENU
 LOOP_MENU:
-    ; Exibe titulo e botoes do menu
+    ; Renderiza título e botões
     call PRINT_TITLE_MENU
     call PRINT_BUTTONS
     
+    ; Animação: move meteoro, alien e nave no menu
     call MOVE_MENU
-    ; Recebe entrada do usu??rio
+    
+    ; Verifica se há tecla pressionada
     mov ah, 1H
     int 16H
     jz LOOP_MENU
 
-    ; Chama a fun????o de navega????o
+    ; Processa entrada (setas para navegar)
     call HANDLE_INPUT
 
-    ; Condi????o para iniciar o jogo
+    ; Enter pressionado? Inicia seleção
     cmp ah, 1CH
     je SELECT_OPTION
 
-    ; Retorno ao loop do menu
+    ; Limpa buffer do teclado e volta ao loop
     xor ah, ah
     int 16H
     jmp LOOP_MENU
+; SELEÇÃO DO MENU (JOGAR ou SAIR)
 SELECT_OPTION:
     xor ah, ah
     int 16H
     
+    ; Verifica opção selecionada
     mov ah, menu
     cmp ah, 1
-    je FINISH
+    je FINISH  ; Se SAIR, termina programa
     
-    call RESET_GAME  ; Reseta score, vidas e fase
+    ; Opção JOGAR selecionada
+    call RESET_GAME   ; Reseta score, vidas e fase para início
+    call RENDER_FASE  ; Mostra tela "Fase 1"
     
-    call RENDER_FASE  ; Mostra a tela da fase
-    
-    ; Aguarda um pouco para ver a fase
+    ; Delay para visualizar tela de fase
     xor cx, cx
     mov dx, 0FFFFH
     mov ah, 86H
     int 15h
     
-    ; Limpa completamente a tela antes de iniciar o jogo
+    ; Limpa tela para iniciar jogo
     call CLEAR_SCREEN
-
-    call RESET_SHIP
+    call RESET_SHIP   ; Posiciona nave na posição inicial
     
+; GAME LOOP (executa a cada frame)
     GAME_LOOP:
-    call RENDER_TERRAIN  ; Renderiza o terreno primeiro
-    call RENDER_STATUS   ; Renderiza score, vidas e tempo
-    call UPDATE_TIME
-    call UPDATE_SHIP
-    call UPDATE_SHOT     ; Atualiza os tiros
-    call UPDATE_ALIENS   ; Atualiza aliens
-    call CHECK_ALIEN_SHOT_COLLISION   ; Colisão tiros vs aliens
-    call CHECK_ALIEN_SHIP_COLLISION   ; Colisão nave vs aliens
+    call RENDER_TERRAIN               ; Renderiza terreno (fase 1/2) ou torres (fase 3)
+    call RENDER_STATUS                ; Renderiza HUD: score, vidas, tempo
+    call UPDATE_TIME                  ; Atualiza contador de tempo
+    call UPDATE_SHIP                  ; Processa input e movimento da nave
+    call UPDATE_SHOT                  ; Atualiza posição dos tiros
+    call UPDATE_ALIENS                ; Atualiza posição e spawn de inimigos
+    call CHECK_ALIEN_SHOT_COLLISION   ; COLISÃO: Tiros vs Aliens
+    call CHECK_ALIEN_SHIP_COLLISION   ; COLISÃO: Nave vs Aliens
     
     ; Verifica condições de fim de jogo
     call CHECK_GAME_END
-    cmp al, 1            ; Game Over?
+    cmp al, 1            ; AL=1: Game Over (sem vidas ou timeout)
     je GAME_OVER_END
-    cmp al, 2            ; Vitória?
+    cmp al, 2            ; AL=2: Vitória (completou fase 3)
     je VICTORY_END
     
     jmp GAME_LOOP
-    
+
+; FIM DE JOGO
 GAME_OVER_END:
     call SHOW_GAME_OVER
     jmp LOOP_MENU        ; Volta ao menu principal
@@ -485,13 +482,11 @@ VICTORY_END:
     jmp LOOP_MENU        ; Volta ao menu principal
 
 FINISH:
-    CALL END_GAME
-    
+    CALL END_GAME        ; Volta para modo texto e encerra
     ret
 
-; Procedimento para exibir os botoes INICIAR e SAIR
-; se menu == 0 o bot?o jogar fica vermelho
-; se menu == 1 o botao sair fica vermelho
+; PROCEDURES DA TELA INICIAL
+; PRINT_BUTTONS - Renderiza botões (destaca selecionado em vermelho)
 PRINT_BUTTONS proc
     push ax
     mov bl, 0FH
@@ -525,7 +520,7 @@ EXIT_BTN:
     ret
 PRINT_BUTTONS endp
 
-; gera um valor aleatorio do clock com 1AH
+; N_ALE - Gera número aleatório usando relógio do sistema (int 1AH)
 N_ALE proc
     push ax
     push cx
@@ -541,11 +536,8 @@ N_ALE proc
     ret
 N_ALE endp
 
-;  Desenha CX caracteres a partir de ES:BP na posi??o (linha DH, coluna DL).
-;  Usa a cor/atributo em BL (p.ex.: 0Fh = branco, 0Ch = vermelho-claro).
-;  Atualiza o cursor ap?s imprimir (modo AL=1).
-;  ES deve apontar para o segmento onde est? a string (comumente ES=DS).
-;  BP deve conter o offset da string dentro de ES.
+; PRINT_STRING - Imprime string em modo texto
+; Entrada: BP=offset string, CX=tamanho, DH=linha, DL=coluna, BL=cor
 PRINT_STRING PROC
     push AX
     push BX
@@ -569,23 +561,23 @@ PRINT_STRING PROC
     ret
 PRINT_STRING ENDP
 
+; PRINT_TITLE_MENU - Renderiza título "Scramble" em verde
 PRINT_TITLE_MENU proc
     mov ax, ds 
     mov es, ax
     
-    ; ajusta resgitradores pro PRINT_STRING
     mov bp, offset string
-    mov cx, string_length ; tamanho
-    mov bl, 02H ; Cor verde (se bit 1 de AL estiver limpo, usamos BL)
-    mov dx, 320*3 ; linha / coluna
+    mov cx, string_length
+    mov bl, 02H          ; Cor verde
+    mov dx, 320*3        ; Posição na tela
     call PRINT_STRING
 
     ret
 PRINT_TITLE_MENU endp
 
-; Renderiza sprite da nave
-; AX = posição na tela
-; SI = offset do sprite
+; RENDERIZAÇÃO DE SPRITES
+; RENDER_SPRITE - Desenha sprite 24x20 (usa rep movsb)
+; Entrada: AX=posição linear, SI=offset sprite
 RENDER_SPRITE proc
     push bx
     push cx
@@ -623,7 +615,8 @@ DRAW_SHIP_LINE:
     ret
 RENDER_SPRITE endp
 
-; usando o valor aleatorio gerado em N_ALE
+; GERAÇÃO ALEATÓRIA
+; RANDOM_UINT16 - LCG (retorna em AX)
 RANDOM_UINT16 proc
     push dx
 
@@ -636,10 +629,8 @@ RANDOM_UINT16 proc
     ret
 endp
 
-; Inicializa posi??o e dire??o aleat?rias do alien
-; Requer: RANDOM_UINT16 (retorna AX pseudo-aleat?rio)
-; Usa: y fixo = 100 (troque se quiser), largura sprite = 14 (logo x<=306)
-
+; INIT_ALIEN_RANDOM - Posiciona alien em X aleatório na tela inicial
+; Usa RANDOM_UINT16 para gerar X entre 0-306
 INIT_ALIEN_RANDOM proc
     push ax
     push bx
@@ -671,7 +662,8 @@ INIT_ALIEN_RANDOM proc
     ret
 INIT_ALIEN_RANDOM endp
 
-; DI = posi??o linear do canto esquerdo do sprite
+; CLEAR_SPRITE - Apaga sprite genérico (24x20) pintando de preto
+; Entrada: DI=posição linear
 CLEAR_SPRITE proc
     push ax
     push cx
@@ -698,14 +690,9 @@ CLEAR_LINE:
     ret
 CLEAR_SPRITE endp
 
-; MOVE_WRAP_LEFT_AND_DRAW
-; Entradas:
-;   BX = &pos_var           (ex.: OFFSET meteor_pos)
-;   SI = offset sprite      (ex.: OFFSET meteor_sprite)  
-;   AX = pos_inicial        (ex.: meteor_pos_ini)
-;   DX = limite_esquerdo    (ex.: 4)
-; Efeito:
-;   - limpa, move 1 px p/ esquerda (wrap p/ direita se necessário), redesenha
+; ANIMAÇÃO DO MENU
+; MOVE_WRAP_LEFT_AND_DRAW - Move esquerda com wrap (meteoro)
+; Entrada: BX=&pos, SI=sprite, AX=pos_ini, DX=limite
 MOVE_WRAP_LEFT_AND_DRAW proc
     push ax
     push bx
