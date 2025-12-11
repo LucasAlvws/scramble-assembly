@@ -112,7 +112,7 @@
 
     ship_pos_ini EQU ROW_SHIP*320 
     ship_pos dw ship_pos_ini      ; Posição atual da nave (atualizada no jogo)
-    ship_speed EQU 5              ; Velocidade da nave em pixels por frame
+    ship_speed EQU 5              ; VELOCIDADE DA NAVE: altere aqui (pixels/frame)
     
 ; SISTEMA DE TIRO (3 simultâneos)
     shot_count db 3
@@ -125,13 +125,12 @@
     alien_array_active db 5 dup(0)      ; Status: 0=inativo, 1=ativo
     alien_spawn_timer dw 0              ; Contador de frames até próximo spawn
     
-    ; CONFIGURAÇÃO: Velocidades e delays de spawn por fase
-    alien_spawn_delay dw 60             ; Fase 1: 60 frames entre spawns
-    alien_move_speed dw 1               ; Fase 1: 1 pixel por frame
-    meteor_move_speed dw 1              ; Fase 2: 1 pixel por frame  
-    meteor_spawn_delay dw 60            ; Fase 2: 60 frames entre spawns
-    alien_fase3_move_speed dw 3         ; Fase 3: 3 pixels por frame (mais rápido)
-    alien_fase3_spawn_delay dw 45       ; Fase 3: 45 frames entre spawns (mais frequente)
+    alien_spawn_delay dw 60             ; Fase 1: delay entre spawns (frames)
+    alien_move_speed dw 1               ; VELOCIDADE ALIEN FASE 1: pixels/frame
+    meteor_move_speed dw 1              ; VELOCIDADE METEORO FASE 2: pixels/frame
+    meteor_spawn_delay dw 60            ; Fase 2: delay entre spawns (frames)
+    alien_fase3_move_speed dw 3         ; VELOCIDADE ALIEN FASE 3: pixels/frame
+    alien_fase3_spawn_delay dw 45       ; Fase 3: delay entre spawns (frames)
 
 ; CONFIGURAÇÕES GERAIS
     LIFES_START EQU 3         ; CONFIGURAÇÃO: vidas iniciais do jogador
@@ -1355,14 +1354,14 @@ MOVE_DOWN:
     jmp END_CONTROLS
 MOVE_LEFT:
     mov bx, OFFSET ship_pos     ; ponteiro para posição da nave
-    mov cx, ship_speed          ; velocidade da nave
+    mov cx, ship_speed          ; *** usa ship_speed ***
     mov dx, 4                   ; limite esquerdo
     call MOVE_LEFT_PROC
     jmp END_CONTROLS
 
 MOVE_RIGHT:
     mov bx, OFFSET ship_pos     ; ponteiro para posição da nave
-    mov cx, ship_speed          ; velocidade da nave
+    mov cx, ship_speed          ; *** usa ship_speed ***
     mov dx, 320 - SPR_W         ; limite direito
     call MOVE_RIGHT_PROC
     jmp END_CONTROLS
@@ -1593,7 +1592,7 @@ UPDATE_SHOT_LOOP:
     cmp dx, 310
     jae DEACTIVATE_THIS_SHOT
     
-    ; Move o tiro para direita (2 pixels)
+    ; *** VELOCIDADE DO TIRO: altere aqui (atualmente 2 pixels/frame) ***
     add di, 2
     
     ; Atualiza posição
@@ -2366,10 +2365,10 @@ MOVE_UP_PROC proc
     cmp bx, 320 * 20 + 47
     jb END_UP
     
-    ; Move a nave
+    ; Move a nave para cima (usa ship_speed)
     mov al, 1
     mov ah, 1
-    mov bx, ship_speed
+    mov bx, ship_speed          ; Carrega velocidade da nave
     call MOVE_SPRITE
     
     
@@ -2390,10 +2389,10 @@ MOVE_DOWN_PROC proc
     cmp bx, 320 * 135
     jae END_DOWN
     
-    ; Move a nave
+    ; Move a nave para baixo (usa ship_speed)
     mov al, 1
     xor ah, ah
-    mov bx, ship_speed
+    mov bx, ship_speed          ; Carrega velocidade da nave
     call MOVE_SPRITE
 
     
@@ -2405,9 +2404,10 @@ END_DOWN:
 endp
 
 MOVE_LEFT_PROC proc
+    ; Move sprite para esquerda
     ; Entradas:
     ;   BX = ponteiro para posição (ex.: OFFSET ship_pos)
-    ;   CX = velocidade (ex.: ship_speed)
+    ;   CX = velocidade em pixels (ex.: ship_speed)
     ;   DX = limite esquerdo (ex.: 4)
     push di
     push si
@@ -2446,9 +2446,10 @@ END_LEFT:
 endp
 
 MOVE_RIGHT_PROC proc
+    ; Move sprite para direita
     ; Entradas:
     ;   BX = ponteiro para posição (ex.: OFFSET alien_pos)
-    ;   CX = velocidade (ex.: 1)
+    ;   CX = velocidade em pixels (ex.: 1)
     ;   DX = limite direito em coordenada X (ex.: 320-SPR_W)
     push di
     push si
